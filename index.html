@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام شيخ الكار - الإدارة الكاملة</title>
+    <style>
+        :root { --p: #1b4332; --cash: #27ae60; --card: #2980b9; --danger: #e74c3c; --warn: #f39c12; --end: #2c3e50; }
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; direction: rtl; }
+        .grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; max-width: 1300px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        header { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        
+        #sidebar { position: fixed; right: -320px; top: 0; width: 280px; height: 100%; background: white; z-index: 1000; padding: 20px; box-shadow: -2px 0 10px rgba(0,0,0,0.1); transition: 0.3s; overflow-y: auto; border-left: 5px solid var(--p); }
+        #sidebar.open { right: 0; }
+        .close-sidebar { background: var(--danger); color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; float: left; font-weight: bold; }
+        
+        .p-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; }
+        .p-btn { border: 2px solid var(--p); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; background: white; transition: 0.2s; }
+        .p-btn:hover { background: var(--p); color: white; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        .row-ret { background: #fee2e2; text-decoration: line-through; color: #999; }
+        
+        .btn-pay { border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        
+        .stat-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-item { padding: 10px; border-radius: 8px; color: white; text-align: center; font-weight: bold; }
+        .top-btn { background: var(--p); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; font-weight: bold; font-size: 1rem; }
+        .end-btn { background: var(--end); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; margin-top: 10px; }
+        .archive-badge { background: #34495e; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin-right: 10px; }
+        .month-stat { background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<button class="top-btn" onclick="toggleSidebar()">⚙️ القائمة الرئيسية (الجرد والمنتجات)</button>
+
+<div id="sidebar">
+    <button class="close-sidebar" onclick="toggleSidebar()">إغلاق X</button>
+    <div style="clear: both; padding-top: 20px;"></div>
+    
+    <h3>➕ إضافة منتج جديد</h3>
+    <input type="text" id="pn" placeholder="اسم المنتج">
+    <input type="number" id="pp" placeholder="السعر">
+    <button onclick="addP()" style="width:100%; background:var(--p); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold;">حفظ المنتج في القائمة</button>
+    <hr>
+
+    <h3>📅 أرشيف الأيام السابقة</h3>
+    <label>اختر تاريخاً:</label>
+    <input type="date" id="hist-date" onchange="loadDate()">
+    <button onclick="goToday()" style="width:100%; margin-bottom:15px; cursor:pointer;">العودة لليوم الحالي</button>
+    <hr>
+    
+    <h3>📊 جرد الشهر الحالي</h3>
+    <button onclick="calcMonth()" style="width:100%; background:var(--card); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold;">حساب صافي الشهر كاملاً</button>
+    <div id="month-result" class="month-stat" style="display:none;"></div>
+    <hr>
+
+    <h3>💰 رصيد بداية اليوم</h3>
+    <label>كاش البداية:</label>
+    <input type="number" id="scash" onchange="saveConf()">
+    <label>شبكة البداية:</label>
+    <input type="number" id="scard" onchange="saveConf()">
+    <hr>
+
+    <button onclick="clearSystem()" style="background:#eee; color:#666; border:none; padding:5px; width:100%; border-radius:5px; cursor:pointer; font-size:10px;">تصفير النظام بالكامل</button>
+</div>
+
+<header>
+    <h2 id="day-name">--</h2>
+    <h1 id="full-date">--</h1>
+</header>
+
+<div class="grid">
+    <div>
+        <div class="card" id="p-card">
+            <h3>🛍️ المنتجات</h3>
+            <div id="p-list" class="p-grid"></div>
+        </div>
+        <div class="card">
+            <h3>🗒️ سجل العمليات <span id="closed-label"></span></h3>
+            <table>
+                <thead>
+                    <tr><th>الوقت</th><th>البيان</th><th>المبلغ</th><th>الطريقة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="card" id="cart-card">
+            <h3>🛒 السلة</h3>
+            <div id="cart-items" style="min-height:50px; border-bottom:1px solid #eee;"></div>
+            <h2 style="text-align:center">الإجمالي: <span id="total">0</span> ريال</h2>
+            <button class="btn-pay" style="background:var(--cash)" onclick="pay('كاش')">دفع كاش 💵</button>
+            <button class="btn-pay" style="background:var(--card)" onclick="pay('شبكة')">دفع شبكة 💳</button>
+            <button class="btn-pay" style="background:#8e44ad" onclick="pay('تحويل')">تحويل بنكي 📱</button>
+            <button onclick="cart=[];upCart();" style="width:100%; margin-top:10px; background:none; border:1px solid #ccc; cursor:pointer;">تفريغ السلة</button>
+        </div>
+
+        <div class="card" id="exp-card" style="background:#fff5f5">
+            <h3>💸 تسجيل مصروف</h3>
+            <input type="text" id="ed" placeholder="سبب الصرف">
+            <input type="number" id="ea" placeholder="المبلغ">
+            <select id="em"><option value="كاش">من الكاش</option><option value="شبكة">من الشبكة</option></select>
+            <button class="btn-pay" style="background:var(--danger)" onclick="addEx()">خصم المصروف</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 الصافي النهائي لليوم</h3>
+            <div class="stat-box">
+                <div class="stat-item" style="background:var(--cash)">صافي الكاش<br><span id="ncash">0</span></div>
+                <div class="stat-item" style="background:var(--card)">صافي الشبكة<br><span id="ncard">0</span></div>
+            </div>
+            
+            <button id="end-btn" class="end-btn" onclick="archiveDay()">🚩 تصفير وإنهاء اليوم (أرشفة)</button>
+            <button onclick="window.print()" style="width:100%; margin-top:15px; cursor:pointer; background:none; border:1px solid #ccc; border-radius:5px; padding:5px;">🖨️ طباعة تقرير اليوم</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // المنتجات الأساسية
+    const baseP = [{n:"عقال مرعز",p:65},{n:"عقال اكرليك",p:100},{n:"عقال ملكي",p:100},{n:"عقال صوف",p:50},{n:"عقال تفصيل",p:150},{n:"عقال تفصيل مجدول",p:250},{n:"خياطة عقال",p:20},{n:"تلميع عقال",p:10},{n:"فروة رجالي",p:100},{n:"فروة بخيا",p:120},{n:"فروة نسائي جديدة",p:130},{n:"قروة شبابي",p:50},{n:"طابقة",p:10},{n:"طايقة جزائري",p:30},{n:"صدرية رجالي",p:100},{n:"حديان",p:50},{n:"بجامة رجالي فروة",p:55},{n:"بجامة رجالي بدون فروة",p:45},{n:"بجامة اطفال",p:45},{n:"فائيلة رجالي",p:15},{n:"سروال طويل",p:20},{n:"طقم هدية",p:600},{n:"مشلح شتوي",p:350},{n:"مشلح صيفي",p:250},{n:"صدرية شبابي",p:50}];
+    
+    let cart = [];
+    let today = new Date().toISOString().split('T')[0];
+    let vDate = today;
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    function loadDate() { vDate = document.getElementById('hist-date').value || today; refresh(); }
+    function goToday() { vDate = today; document.getElementById('hist-date').value = today; refresh(); }
+
+    function saveConf() {
+        if(isClosed(vDate)) return;
+        let c = {scash: parseFloat(document.getElementById('scash').value)||0, scard: parseFloat(document.getElementById('scard').value)||0};
+        localStorage.setItem('conf_'+vDate, JSON.stringify(c)); refresh();
+    }
+
+    function isClosed(date) { return localStorage.getItem('closed_'+date) === 'true'; }
+
+    function addP() {
+        let n = document.getElementById('pn').value;
+        let p = document.getElementById('pp').value;
+        if(n && p) {
+            let custom = JSON.parse(localStorage.getItem('custom_p')) || [];
+            custom.push({n: n, p: parseFloat(p)});
+            localStorage.setItem('custom_p', JSON.stringify(custom));
+            document.getElementById('pn').value=''; document.getElementById('pp').value='';
+            renderP();
+        }
+    }
+
+    function calcMonth() {
+        let month = vDate.substring(0, 7); // يجلب السنة والشهر الحالي
+        let totalCash = 0; let totalCard = 0;
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (key.startsWith('db_') && key.includes(month)) {
+                let date = key.replace('db_', '');
+                let conf = JSON.parse(localStorage.getItem('conf_'+date)) || {scash:0, scard:0};
+                let db = JSON.parse(localStorage.getItem(key));
+                let s = { 'كاش': 0, 'شبكة': 0, 'تحويل': 0 };
+                db.forEach(op => {
+                    if(!op.isRet) {
+                        if(op.type==='sale') s[op.m]+=op.a; else s[op.m]-=op.a;
+                    }
+                });
+                totalCash += s['كاش'];
+                totalCard += (s['شبكة'] + s['تحويل']);
+            }
+        }
+        let res = document.getElementById('month-result');
+        res.style.display = 'block';
+        res.innerHTML = `<strong>جرد شهر (${month}):</strong><br>💵 كاش: ${totalCash} ريال<br>💳 شبكة: ${totalCard} ريال<br>💰 الإجمالي: ${totalCash + totalCard} ريال`;
+    }
+
+    function archiveDay() {
+        if(confirm(`تأكيد إغلاق وردية اليوم وتصفير السجل؟`)) {
+            localStorage.setItem('closed_'+vDate, 'true');
+            refresh();
+            alert("تم الحفظ في الأرشيف.");
+        }
+    }
+
+    function renderP() {
+        let custom = JSON.parse(localStorage.getItem('custom_p')) || [];
+        document.getElementById('p-list').innerHTML = [...baseP, ...custom].map(x => `
+            <div class="p-btn" onclick="addToCart('${x.n}',${x.p})">${x.n}<br><small>${x.p} ريال</small></div>
+        `).join('');
+    }
+
+    function addToCart(n,p) { if(isClosed(vDate)) return; cart.push({n,p}); upCart(); }
+    function upCart() {
+        document.getElementById('cart-items').innerHTML = cart.map(i => `<div>• ${i.n}</div>`).join('');
+        document.getElementById('total').innerText = cart.reduce((s,i)=>s+i.p,0);
+    }
+
+    function pay(m) {
+        if(isClosed(vDate) || vDate !== today) return alert("اليوم مؤرشف!");
+        if(cart.length===0) return;
+        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
+        db.push({id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:cart.map(c=>c.n).join(', '), a:cart.reduce((s,i)=>s+i.p,0), m:m, type:'sale'});
+        localStorage.setItem('db_'+vDate, JSON.stringify(db));
+        cart=[]; upCart(); refresh();
+    }
+
+    function addEx() {
+        if(isClosed(vDate)) return;
+        let d = document.getElementById('ed').value; let a = parseFloat(document.getElementById('ea').value);
+        if(!d || isNaN(a)) return;
+        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
+        db.push({id:Date.now(), t:"صرف", d:"مصروف: "+d, a:a, m:document.getElementById('em').value, type:'ex'});
+        localStorage.setItem('db_'+vDate, JSON.stringify(db));
+        document.getElementById('ed').value=''; document.getElementById('ea').value=''; refresh();
+    }
+
+    function refresh() {
+        let closed = isClosed(vDate);
+        document.getElementById('closed-label').innerHTML = closed ? '<span class="archive-badge">مؤرشف</span>' : "";
+        document.getElementById('end-btn').style.display = (closed || vDate !== today) ? "none" : "block";
+        document.getElementById('p-card').style.opacity = closed ? "0.4" : "1";
+        document.getElementById('cart-card').style.opacity = closed ? "0.4" : "1";
+
+        let conf = JSON.parse(localStorage.getItem('conf_'+vDate)) || {scash:0, scard:0};
+        document.getElementById('scash').value = conf.scash;
+        document.getElementById('scard').value = conf.scard;
+        document.getElementById('day-name').innerText = new Date(vDate).toLocaleDateString('ar-SA', {weekday:'long'});
+        document.getElementById('full-date').innerText = vDate;
+
+        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
+        let h = ''; let s = { 'كاش': conf.scash, 'شبكة': conf.scard, 'تحويل': 0 };
+        
+        db.forEach(op => {
+            let cls = op.isRet ? 'class="row-ret"' : (op.type==='ex'?'style="color:red"':'');
+            h += `<tr ${cls}><td>${op.t}</td><td>${op.d}</td><td>${op.a}</td><td>${op.m}</td>
+            <td>${op.isRet || closed ?'-':`<button onclick="retItem(${op.id})">ترجيع</button>`}</td></tr>`;
+            if(!op.isRet) { if(op.type==='sale') s[op.m]+=op.a; else s[op.m]-=op.a; }
+        });
+        document.getElementById('log-body').innerHTML = h;
+        document.getElementById('ncash').innerText = s['كاش'];
+        document.getElementById('ncard').innerText = (s['شبكة'] + s['تحويل']);
+    }
+
+    function retItem(id) {
+        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
+        let i = db.find(x=>x.id===id);
+        if(i && confirm("إرجاع؟")) { i.isRet=true; localStorage.setItem('db_'+vDate, JSON.stringify(db)); refresh(); }
+    }
+
+    function clearSystem() { if(confirm("حذف كل البيانات؟")) { localStorage.clear(); location.reload(); } }
+
+    renderP(); refresh();
+</script>
+</body>
+</html>
