@@ -2,39 +2,30 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام شيخ الكار - النسخة الشاملة</title>
+    <title>نظام شيخ الكار - النسخة الكاملة</title>
     <style>
         :root { --p: #1b4332; --cash: #27ae60; --card: #2980b9; --danger: #e74c3c; --warn: #f39c12; --end: #2c3e50; }
         body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 0; direction: rtl; }
-        
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--p); z-index: 2000; display: flex; align-items: center; justify-content: center; color: white; }
         .login-box { background: white; color: #333; padding: 30px; border-radius: 15px; width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        
         #main-system { display: none; padding: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; max-width: 1300px; margin: auto; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
         header { background: var(--p); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; position: relative; }
-        
         .logout-btn { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
-
         #sidebar { position: fixed; right: -320px; top: 0; width: 280px; height: 100%; background: white; z-index: 1000; padding: 20px; box-shadow: -2px 0 10px rgba(0,0,0,0.1); transition: 0.3s; overflow-y: auto; border-left: 5px solid var(--p); }
         #sidebar.open { right: 0; }
         .close-sidebar { background: var(--danger); color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; float: left; font-weight: bold; }
-        
         .p-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; }
         .p-btn { border: 2px solid var(--p); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; background: white; transition: 0.2s; }
         .p-btn:hover { background: var(--p); color: white; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
         .row-ex { color: var(--danger); font-weight: bold; }
-        
         .btn-pay { border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
         input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        
         .stat-item { padding: 10px; border-radius: 8px; color: white; text-align: center; font-weight: bold; margin-bottom: 5px; }
         .top-btn { background: var(--p); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
-        
         .locked-input { background: #f0f0f0; color: #777; cursor: not-allowed; border: 1px solid #ccc; }
         .start-box { background: #e8f4fd; border: 1px solid #3498db; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
     </style>
@@ -61,9 +52,8 @@
         <button class="close-sidebar" onclick="toggleSidebar()">إغلاق X</button>
         <div style="clear: both; padding-top: 20px;"></div>
         
-        <h3>📅 جرد الأيام السابقة</h3>
+        <h3>📅 تغيير يوم العمل</h3>
         <input type="date" id="hist-date" onchange="loadDate()">
-        <button onclick="goToday()" style="width:100%; margin-bottom:15px; cursor:pointer; background:#eee; border:1px solid #ccc; padding:8px;">العودة لليوم الحالي</button>
         <hr>
 
         <h3>📊 جرد الشهر (للمدير)</h3>
@@ -83,13 +73,12 @@
     <header>
         <button class="logout-btn" onclick="logout()">خروج ↩</button>
         <h2 id="emp-name" style="margin:0; font-size:1.1rem;">--</h2>
-        <h1 id="full-date" style="margin:5px 0">--</h1>
-        <h3 id="viewing-label" style="margin:0; color:#f39c12; display:none;">(عرض يوم سابق)</h3>
+        <h1 id="full-date" style="margin:5px 0">18-01-2024</h1>
     </header>
 
     <div class="grid">
         <div>
-            <div class="card" id="p-card">
+            <div class="card">
                 <h3>🛍️ قائمة المنتجات</h3>
                 <div id="p-list" class="p-grid"></div>
             </div>
@@ -115,19 +104,23 @@
 
                 <div id="sales-section" style="display:none;">
                     <h3>🛒 الفاتورة</h3>
-                    <div id="cart-items" style="min-height:50px; border-bottom:1px solid #eee;"></div>
+                    <div id="cart-items" style="min-height:50px; border-bottom:1px solid #eee; margin-bottom:10px;"></div>
+                    
                     <label>خصم (ريال):</label>
                     <input type="number" id="discount" value="0" oninput="upCart()">
-                    <h2 style="text-align:center; color:var(--danger);">الصافي: <span id="net-total">0</span></h2>
+                    
+                    <h2 style="text-align:center; color:var(--danger); background:#fff5f5; padding:10px; border-radius:8px;">الصافي: <span id="net-total">0</span></h2>
+                    
                     <button class="btn-pay" style="background:var(--cash)" onclick="pay('كاش')">دفع كاش 💵</button>
                     <button class="btn-pay" style="background:var(--card)" onclick="pay('شبكة')">دفع شبكة 💳</button>
                     
-                    <hr>
-                    <h3>💸 مصروف</h3>
-                    <input type="text" id="ed" placeholder="سبب المصرف">
-                    <input type="number" id="ea" placeholder="المبلغ">
-                    <select id="em"><option value="كاش">كاش</option><option value="شبكة">شبكة</option></select>
-                    <button class="btn-pay" style="background:var(--danger)" onclick="addEx()">تأكيد المصروف</button>
+                    <div style="border-top:2px solid #eee; margin-top:20px; padding-top:10px;">
+                        <h3>💸 تسجيل مصروف</h3>
+                        <input type="text" id="ed" placeholder="سبب المصرف">
+                        <input type="number" id="ea" placeholder="المبلغ">
+                        <select id="em"><option value="كاش">خصم من الكاش</option><option value="شبكة">خصم من الشبكة</option></select>
+                        <button class="btn-pay" style="background:var(--danger)" onclick="addEx()">تأكيد المصروف</button>
+                    </div>
                 </div>
             </div>
 
@@ -144,8 +137,8 @@
 <script>
     const users = { "المدير": "12344", "عزام": "1234", "يحيى": "9999" };
     let currentUser = "";
-    let cart = []; let today = new Date().toISOString().split('T')[0]; let vDate = today;
-    const baseP = [{n:"عقال مرعز",p:65},{n:"عقال اكرليك",p:100},{n:"عقال ملكي",p:100},{n:"عقال صوف",p:50},{n:"عقال تفصيل",p:150},{n:"عقال تفصيل مجدول",p:250},{n:"خياطة عقال",p:20},{n:"تلميع عقال",p:10},{n:"فروة رجالي",p:100},{n:"فروة بخيا",p:120},{n:"فروة نسائي جديدة",p:130},{n:"قروة شبابي",p:50},{n:"طابقة",p:10},{n:"طايقة جزائري",p:30},{n:"صدرية رجالي",p:100},{n:"حديان",p:50},{n:"بجامة رجالي فروة",p:55},{n:"بجامة رجالي بدون فروة",p:45},{n:"بجامة اطفال",p:45},{n:"فائيلة رجالي",p:15},{n:"سروال طويل",p:20},{n:"طقم هدية",p:600},{n:"مشلح شتوي",p:350},{n:"مشلح صيفي",p:250},{n:"صدرية شبابي",p:50}];
+    let cart = []; 
+    let vDate = localStorage.getItem('current_work_date') || "2024-01-18"; 
 
     function login() {
         let u = document.getElementById('user-select').value;
@@ -155,7 +148,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-system').style.display = 'block';
             document.getElementById('emp-name').innerText = "الموظف: " + currentUser;
-            document.getElementById('user-pass').value = '';
+            renderP();
             refresh();
         } else { alert("كلمة السر خطأ!"); }
     }
@@ -171,51 +164,47 @@
     function refresh() {
         let closed = localStorage.getItem('closed_'+vDate) === 'true';
         let conf = JSON.parse(localStorage.getItem('conf_'+vDate)) || {scash:0, scard:0, locked:false};
-        let isToday = (vDate === today);
-
-        document.getElementById('viewing-label').style.display = isToday ? 'none' : 'block';
-        document.getElementById('closed-label').innerText = closed ? "(مؤرشف)" : "";
-        
-        let scashInp = document.getElementById('scash');
-        let scardInp = document.getElementById('scard');
-        let saveBtn = document.getElementById('save-start-btn');
-        let salesSec = document.getElementById('sales-section');
-
-        scashInp.value = conf.scash;
-        scardInp.value = conf.scard;
-
-        if(conf.locked || closed || !isToday) {
-            scashInp.disabled = true; scashInp.classList.add('locked-input');
-            scardInp.disabled = true; scardInp.classList.add('locked-input');
-            saveBtn.style.display = 'none';
-            salesSec.style.display = (closed || !isToday) ? 'none' : 'block';
-        } else {
-            scashInp.disabled = false; scashInp.classList.remove('locked-input');
-            scardInp.disabled = false; scardInp.classList.remove('locked-input');
-            saveBtn.style.display = 'block';
-            salesSec.style.display = 'none';
-        }
 
         document.getElementById('full-date').innerText = vDate;
+        document.getElementById('closed-label').innerText = closed ? "(مؤرشف)" : "";
+        
+        document.getElementById('scash').value = conf.scash;
+        document.getElementById('scard').value = conf.scard;
+
+        if(conf.locked || closed) {
+            document.getElementById('scash').disabled = true;
+            document.getElementById('scard').disabled = true;
+            document.getElementById('save-start-btn').style.display = 'none';
+            document.getElementById('sales-section').style.display = closed ? 'none' : 'block';
+        } else {
+            document.getElementById('scash').disabled = false;
+            document.getElementById('scard').disabled = false;
+            document.getElementById('save-start-btn').style.display = 'block';
+            document.getElementById('sales-section').style.display = 'none';
+        }
+
         let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
         let h = ''; let s = { 'كاش': conf.scash, 'شبكة': conf.scard };
         
         db.forEach(op => {
             let cls = op.type === 'ex' ? 'class="row-ex"' : '';
             h += `<tr ${cls}><td>${op.emp}</td><td>${op.t}</td><td>${op.d}</td><td>${op.a}</td><td>${op.m}</td>
-            <td>${(closed || !isToday)?'-':`<button onclick="retItem(${op.id})">حذف</button>`}</td></tr>`;
+            <td>${closed ? '-' : `<button onclick="retItem(${op.id})">حذف</button>`}</td></tr>`;
             if(op.type==='sale') s[op.m]+=op.a; else s[op.m]-=op.a;
         });
         document.getElementById('log-body').innerHTML = h;
-        document.getElementById('ncash').innerText = s['كاش'];
-        document.getElementById('ncard').innerText = s['شبكة'];
-        document.getElementById('end-btn').style.display = (closed || !isToday) ? "none" : "block";
+        document.getElementById('ncash').innerText = s['كاش'].toFixed(2);
+        document.getElementById('ncard').innerText = s['شبكة'].toFixed(2);
+        document.getElementById('end-btn').style.display = closed ? "none" : "block";
     }
 
     function pay(m) {
         if(cart.length===0) return;
         let disc = parseFloat(document.getElementById('discount').value) || 0;
-        let finalA = cart.reduce((s,i)=>s+i.p,0) - disc;
+        let total = cart.reduce((s,i)=>s+i.p,0);
+        let finalA = total - disc;
+        if(finalA < 0) finalA = 0;
+
         let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
         db.push({ emp: currentUser, id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:cart.map(c=>c.n).join(','), a:finalA, m:m, type:'sale' });
         localStorage.setItem('db_'+vDate, JSON.stringify(db));
@@ -223,12 +212,33 @@
     }
 
     function addEx() {
-        let d = document.getElementById('ed').value; let a = parseFloat(document.getElementById('ea').value);
+        let d = document.getElementById('ed').value; 
+        let a = parseFloat(document.getElementById('ea').value);
+        let m = document.getElementById('em').value;
         if(!d || isNaN(a)) return;
         let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
-        db.push({ emp: currentUser, id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:"مصروف: "+d, a:a, m:document.getElementById('em').value, type:'ex' });
+        db.push({ emp: currentUser, id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:"مصروف: "+d, a:a, m:m, type:'ex' });
         localStorage.setItem('db_'+vDate, JSON.stringify(db));
         document.getElementById('ed').value=''; document.getElementById('ea').value=''; refresh();
+    }
+
+    function upCart() {
+        let total = cart.reduce((s,i)=>s+i.p,0);
+        let disc = parseFloat(document.getElementById('discount').value) || 0;
+        document.getElementById('cart-items').innerHTML = cart.map(i => `<div style="padding:2px">● ${i.n} (${i.p})</div>`).join('');
+        document.getElementById('net-total').innerText = (total - disc).toFixed(2);
+    }
+
+    function addToCart(n,p) { 
+        if(localStorage.getItem('closed_'+vDate)==='true') return; 
+        cart.push({n,p}); 
+        upCart(); 
+    }
+
+    function renderP() {
+        const baseP = [{n:"عقال مرعز",p:65},{n:"عقال اكرليك",p:100},{n:"عقال ملكي",p:100},{n:"عقال صوف",p:50},{n:"عقال تفصيل",p:150},{n:"عقال تفصيل مجدول",p:250},{n:"خياطة عقال",p:20},{n:"تلميع عقال",p:10},{n:"فروة رجالي",p:100},{n:"فروة بخيا",p:120},{n:"فروة نسائي جديدة",p:130},{n:"قروة شبابي",p:50},{n:"طابقة",p:10},{n:"طايقة جزائري",p:30},{n:"صدرية رجالي",p:100},{n:"حديان",p:50},{n:"بجامة رجالي فروة",p:55},{n:"بجامة رجالي بدون فروة",p:45},{n:"بجامة اطفال",p:45},{n:"فائيلة رجالي",p:15},{n:"سروال طويل",p:20},{n:"طقم هدية",p:600},{n:"مشلح شتوي",p:350},{n:"مشلح صيفي",p:250},{n:"صدرية شبابي",p:50}];
+        let custom = JSON.parse(localStorage.getItem('custom_p')) || [];
+        document.getElementById('p-list').innerHTML = [...baseP, ...custom].map(x => `<div class="p-btn" onclick="addToCart('${x.n}',${x.p})">${x.n}<br>${x.p} ريال</div>`).join('');
     }
 
     function calcMonth() {
@@ -242,31 +252,20 @@
             }
         }
         let res = document.getElementById('month-result'); res.style.display = 'block';
-        res.innerHTML = `<strong>جرد شهر (${month}):</strong><br>💵 كاش: ${tCash} ريال<br>💳 شبكة: ${tCard} ريال`;
+        res.innerHTML = `<strong>جرد شهر (${month}):</strong><br>💵 كاش: ${tCash.toFixed(2)}<br>💳 شبكة: ${tCard.toFixed(2)}`;
     }
 
-    function upCart() {
-        let total = cart.reduce((s,i)=>s+i.p,0);
-        let disc = parseFloat(document.getElementById('discount').value) || 0;
-        document.getElementById('cart-items').innerHTML = cart.map(i => `<div>• ${i.n} (${i.p})</div>`).join('');
-        document.getElementById('net-total').innerText = total - disc;
-    }
-
-    function addToCart(n,p) { if(localStorage.getItem('closed_'+vDate)==='true' || vDate !== today) return; cart.push({n,p}); upCart(); }
-    function renderP() {
-        let custom = JSON.parse(localStorage.getItem('custom_p')) || [];
-        document.getElementById('p-list').innerHTML = [...baseP, ...custom].map(x => `<div class="p-btn" onclick="addToCart('${x.n}',${x.p})">${x.n}<br>${x.p} ريال</div>`).join('');
-    }
     function logout() { currentUser = ""; document.getElementById('login-screen').style.display = 'flex'; document.getElementById('main-system').style.display = 'none'; }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-    function goToday() { vDate = today; refresh(); }
-    function loadDate() { vDate = document.getElementById('hist-date').value || today; refresh(); }
-    function archiveDay() { if(confirm("هل تريد إغلاق الوردية وأرشفتها؟")) { localStorage.setItem('closed_'+vDate, 'true'); refresh(); } }
+    function loadDate() { 
+        vDate = document.getElementById('hist-date').value; 
+        localStorage.setItem('current_work_date', vDate);
+        refresh(); 
+    }
+    function archiveDay() { if(confirm("هل تريد إغلاق الوردية؟")) { localStorage.setItem('closed_'+vDate, 'true'); refresh(); } }
     function retItem(id) { if(confirm("حذف العملية؟")) { let db = JSON.parse(localStorage.getItem('db_'+vDate)) || []; db = db.filter(x=>x.id!==id); localStorage.setItem('db_'+vDate, JSON.stringify(db)); refresh(); } }
-    function clearSystemWithPass() { if(prompt("أدخل كلمة سر التصفية:")==="12344") { localStorage.clear(); location.reload(); } }
+    function clearSystemWithPass() { if(prompt("كلمة سر التصفية:")==="12344") { localStorage.clear(); location.reload(); } }
     function addP() { let n=document.getElementById('pn').value; let p=document.getElementById('pp').value; if(n && p) { let c=JSON.parse(localStorage.getItem('custom_p'))||[]; c.push({n,p:parseFloat(p)}); localStorage.setItem('custom_p',JSON.stringify(c)); renderP(); } }
-
-    renderP();
 </script>
 </body>
 </html>
