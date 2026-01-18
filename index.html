@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام شيخ الكار - الموظفين</title>
+    <title>نظام شيخ الكار - النسخة الشاملة</title>
     <style>
         :root { --p: #1b4332; --cash: #27ae60; --card: #2980b9; --danger: #e74c3c; --warn: #f39c12; --end: #2c3e50; }
         body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 0; direction: rtl; }
@@ -27,15 +27,16 @@
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        .row-ex { color: var(--danger); font-weight: bold; }
         
         .btn-pay { border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
         input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
         
-        .stat-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stat-item { padding: 10px; border-radius: 8px; color: white; text-align: center; font-weight: bold; }
+        .stat-item { padding: 10px; border-radius: 8px; color: white; text-align: center; font-weight: bold; margin-bottom: 5px; }
         .top-btn { background: var(--p); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
-        .end-btn { background: var(--end); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; margin-top: 10px; }
-        .disc-area { background: #fff9db; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px dashed #f59f00; }
+        
+        .locked-input { background: #f0f0f0; color: #777; cursor: not-allowed; border: 1px solid #ccc; }
+        .start-box { background: #e8f4fd; border: 1px solid #3498db; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -43,11 +44,10 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="margin-top:0; color:var(--p)">نظام شيخ الكار</h2>
-        <p>تسجيل دخول الموظف</p>
         <select id="user-select">
             <option value="المدير">المدير العام</option>
-            <option value="عزام">الموظف عزام</option>
-            <option value="يحيى">الموظف يحيى</option>
+            <option value="عزام">عزام</option>
+            <option value="يحيى">يحيى</option>
         </select>
         <input type="password" id="user-pass" placeholder="كلمة السر">
         <button onclick="login()" style="width:100%; padding:12px; background:var(--cash); color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">دخول</button>
@@ -55,41 +55,36 @@
 </div>
 
 <div id="main-system">
-    <button class="top-btn" onclick="toggleSidebar()">⚙️ الإدارة والمنتجات</button>
+    <button class="top-btn" onclick="toggleSidebar()">⚙️ الإدارة وجرد الأيام</button>
 
     <div id="sidebar">
         <button class="close-sidebar" onclick="toggleSidebar()">إغلاق X</button>
         <div style="clear: both; padding-top: 20px;"></div>
         
-        <h3>➕ إضافة منتج جديد</h3>
-        <input type="text" id="pn" placeholder="اسم المنتج">
-        <input type="number" id="pp" placeholder="السعر">
-        <button onclick="addP()" style="width:100%; background:var(--p); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">حفظ المنتج</button>
+        <h3>📅 جرد الأيام السابقة</h3>
+        <input type="date" id="hist-date" onchange="loadDate()">
+        <button onclick="goToday()" style="width:100%; margin-bottom:15px; cursor:pointer; background:#eee; border:1px solid #ccc; padding:8px;">العودة لليوم الحالي</button>
         <hr>
 
-        <h3>📅 الأرشيف والجرد</h3>
-        <input type="date" id="hist-date" onchange="loadDate()">
-        <button onclick="goToday()" style="width:100%; margin-bottom:15px; cursor:pointer;">اليوم الحالي</button>
-        <hr>
-        
         <h3>📊 جرد الشهر (للمدير)</h3>
-        <button onclick="calcMonth()" style="width:100%; background:var(--card); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">حساب صافي الشهر</button>
+        <button onclick="calcMonth()" style="width:100%; background:var(--card); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">صافي الشهر الحالي</button>
         <div id="month-result" style="display:none; padding:10px; background:#f9f9f9; margin-top:5px; border-radius:5px; border:1px solid #ddd;"></div>
         <hr>
 
-        <h3>💰 رصيد البداية</h3>
-        <label>كاش البداية:</label><input type="number" id="scash" onchange="saveConf()">
-        <label>شبكة البداية:</label><input type="number" id="scard" onchange="saveConf()">
+        <h3>➕ إضافة منتج</h3>
+        <input type="text" id="pn" placeholder="اسم المنتج">
+        <input type="number" id="pp" placeholder="السعر">
+        <button onclick="addP()" style="width:100%; background:var(--p); color:white; border:none; padding:10px; border-radius:5px;">حفظ المنتج</button>
         <hr>
 
-        <button style="background:#fee2e2; color:#b91c1c; border:1px solid #f87171; padding:10px; width:100%; border-radius:5px; cursor:pointer; font-weight:bold;" onclick="clearSystemWithPass()">تصفية شاملة للنظام</button>
+        <button style="background:#fee2e2; color:#b91c1c; border:1px solid #f87171; padding:10px; width:100%; border-radius:5px; cursor:pointer;" onclick="clearSystemWithPass()">تصفية شاملة للنظام</button>
     </div>
 
     <header>
         <button class="logout-btn" onclick="logout()">خروج ↩</button>
         <h2 id="emp-name" style="margin:0; font-size:1.1rem;">--</h2>
         <h1 id="full-date" style="margin:5px 0">--</h1>
-        <small id="day-name">--</small>
+        <h3 id="viewing-label" style="margin:0; color:#f39c12; display:none;">(عرض يوم سابق)</h3>
     </header>
 
     <div class="grid">
@@ -101,50 +96,56 @@
             <div class="card">
                 <h3>🗒️ سجل العمليات <span id="closed-label" style="color:red; font-weight:bold;"></span></h3>
                 <table>
-                    <thead>
-                        <tr><th>الموظف</th><th>الوقت</th><th>البيان</th><th>المبلغ</th><th>الطريقة</th><th>إجراء</th></tr>
-                    </thead>
+                    <thead><tr><th>الموظف</th><th>الوقت</th><th>البيان</th><th>المبلغ</th><th>الطريقة</th><th>إجراء</th></tr></thead>
                     <tbody id="log-body"></tbody>
                 </table>
             </div>
         </div>
 
         <div>
-            <div class="card" id="cart-card">
-                <h3>🛒 فاتورة جديدة</h3>
-                <div id="cart-items" style="min-height:50px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
-                <div class="disc-area">
-                    <label>خصم خاص (ريال):</label>
-                    <input type="number" id="discount" value="0" oninput="upCart()" style="padding:5px;">
+            <div class="card">
+                <div id="start-balance-section" class="start-box">
+                    <h3 style="margin-top:0; color:#2980b9;">💰 رصيد بداية اليوم</h3>
+                    <label>كاش البداية:</label>
+                    <input type="number" id="scash" placeholder="0.00">
+                    <label>شبكة البداية:</label>
+                    <input type="number" id="scard" placeholder="0.00">
+                    <button id="save-start-btn" onclick="saveStartBalance()" style="width:100%; background:#3498db; color:white; border:none; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">اعتماد وحفظ الرصيد</button>
                 </div>
-                <h2 style="text-align:center; color:var(--danger); margin:10px 0;">الصافي: <span id="net-total">0</span> ريال</h2>
-                <button class="btn-pay" style="background:var(--cash)" onclick="pay('كاش')">دفع كاش 💵</button>
-                <button class="btn-pay" style="background:var(--card)" onclick="pay('شبكة')">دفع شبكة 💳</button>
-                <button onclick="cart=[];upCart();" style="width:100%; margin-top:10px; background:none; border:none; color:#666; cursor:pointer; text-decoration:underline;">إلغاء الطلب</button>
+
+                <div id="sales-section" style="display:none;">
+                    <h3>🛒 الفاتورة</h3>
+                    <div id="cart-items" style="min-height:50px; border-bottom:1px solid #eee;"></div>
+                    <label>خصم (ريال):</label>
+                    <input type="number" id="discount" value="0" oninput="upCart()">
+                    <h2 style="text-align:center; color:var(--danger);">الصافي: <span id="net-total">0</span></h2>
+                    <button class="btn-pay" style="background:var(--cash)" onclick="pay('كاش')">دفع كاش 💵</button>
+                    <button class="btn-pay" style="background:var(--card)" onclick="pay('شبكة')">دفع شبكة 💳</button>
+                    
+                    <hr>
+                    <h3>💸 مصروف</h3>
+                    <input type="text" id="ed" placeholder="سبب المصرف">
+                    <input type="number" id="ea" placeholder="المبلغ">
+                    <select id="em"><option value="كاش">كاش</option><option value="شبكة">شبكة</option></select>
+                    <button class="btn-pay" style="background:var(--danger)" onclick="addEx()">تأكيد المصروف</button>
+                </div>
             </div>
 
             <div class="card">
-                <h3>📊 تقرير الوردية</h3>
-                <div class="stat-box">
-                    <div class="stat-item" style="background:var(--cash)">كاش: <span id="ncash">0</span></div>
-                    <div class="stat-item" style="background:var(--card)">شبكة: <span id="ncard">0</span></div>
-                </div>
-                <button id="end-btn" class="end-btn" onclick="archiveDay()">🚩 إغلاق الوردية والأرشفة</button>
+                <h3>📊 الصافي النهائي لليوم</h3>
+                <div class="stat-item" style="background:var(--cash)">كاش: <span id="ncash">0</span></div>
+                <div class="stat-item" style="background:var(--card)">شبكة: <span id="ncard">0</span></div>
+                <button id="end-btn" style="background:var(--end); color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold; margin-top:10px;" onclick="archiveDay()">🚩 إنهاء اليوم وأرشفة الحسابات</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const users = {
-        "المدير": "12344",
-        "عزام": "1234",
-        "يحيى": "9999"
-    };
-
+    const users = { "المدير": "12344", "عزام": "1234", "يحيى": "9999" };
     let currentUser = "";
-    const baseP = [{n:"عقال مرعز",p:65},{n:"عقال اكرليك",p:100},{n:"عقال ملكي",p:100},{n:"عقال صوف",p:50},{n:"عقال تفصيل",p:150},{n:"عقال تفصيل مجدول",p:250},{n:"خياطة عقال",p:20},{n:"تلميع عقال",p:10},{n:"فروة رجالي",p:100},{n:"فروة بخيا",p:120},{n:"فروة نسائي جديدة",p:130},{n:"قروة شبابي",p:50},{n:"طابقة",p:10},{n:"طايقة جزائري",p:30},{n:"صدرية رجالي",p:100},{n:"حديان",p:50},{n:"بجامة رجالي فروة",p:55},{n:"بجامة رجالي بدون فروة",p:45},{n:"بجامة اطفال",p:45},{n:"فائيلة رجالي",p:15},{n:"سروال طويل",p:20},{n:"طقم هدية",p:600},{n:"مشلح شتوي",p:350},{n:"مشلح صيفي",p:250},{n:"صدرية شبابي",p:50}];
     let cart = []; let today = new Date().toISOString().split('T')[0]; let vDate = today;
+    const baseP = [{n:"عقال مرعز",p:65},{n:"عقال اكرليك",p:100},{n:"عقال ملكي",p:100},{n:"عقال صوف",p:50},{n:"عقال تفصيل",p:150},{n:"عقال تفصيل مجدول",p:250},{n:"خياطة عقال",p:20},{n:"تلميع عقال",p:10},{n:"فروة رجالي",p:100},{n:"فروة بخيا",p:120},{n:"فروة نسائي جديدة",p:130},{n:"قروة شبابي",p:50},{n:"طابقة",p:10},{n:"طايقة جزائري",p:30},{n:"صدرية رجالي",p:100},{n:"حديان",p:50},{n:"بجامة رجالي فروة",p:55},{n:"بجامة رجالي بدون فروة",p:45},{n:"بجامة اطفال",p:45},{n:"فائيلة رجالي",p:15},{n:"سروال طويل",p:20},{n:"طقم هدية",p:600},{n:"مشلح شتوي",p:350},{n:"مشلح صيفي",p:250},{n:"صدرية شبابي",p:50}];
 
     function login() {
         let u = document.getElementById('user-select').value;
@@ -159,65 +160,75 @@
         } else { alert("كلمة السر خطأ!"); }
     }
 
-    function logout() { currentUser = ""; document.getElementById('login-screen').style.display = 'flex'; document.getElementById('main-system').style.display = 'none'; }
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-    function loadDate() { vDate = document.getElementById('hist-date').value || today; refresh(); }
-    function goToday() { vDate = today; document.getElementById('hist-date').value = today; refresh(); }
-    function isClosed(date) { return localStorage.getItem('closed_'+date) === 'true'; }
-
-    function upCart() {
-        let total = cart.reduce((s,i)=>s+i.p,0);
-        let disc = parseFloat(document.getElementById('discount').value) || 0;
-        document.getElementById('cart-items').innerHTML = cart.map(i => `<div>• ${i.n} (${i.p} ر.س)</div>`).join('');
-        document.getElementById('net-total').innerText = total - disc;
-    }
-
-    function addToCart(n,p) { if(isClosed(vDate)) return; cart.push({n,p}); upCart(); }
-
-    function pay(m) {
-        if(isClosed(vDate) || vDate !== today) return alert("الوردية مؤرشفة!");
-        if(cart.length===0) return;
-        let disc = parseFloat(document.getElementById('discount').value) || 0;
-        let finalA = cart.reduce((s,i)=>s+i.p,0) - disc;
-        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
-        db.push({ emp: currentUser, id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:cart.map(c=>c.n).join(',') + (disc > 0 ? ` (خصم ${disc})` : ''), a:finalA, m:m, type:'sale' });
-        localStorage.setItem('db_'+vDate, JSON.stringify(db));
-        cart=[]; document.getElementById('discount').value=0; upCart(); refresh();
+    function saveStartBalance() {
+        if(confirm("سيتم قفل رصيد البداية الآن، هل أنت متأكد؟")) {
+            let c = { scash: parseFloat(document.getElementById('scash').value)||0, scard: parseFloat(document.getElementById('scard').value)||0, locked: true };
+            localStorage.setItem('conf_'+vDate, JSON.stringify(c));
+            refresh();
+        }
     }
 
     function refresh() {
-        let closed = isClosed(vDate);
-        document.getElementById('closed-label').innerText = closed ? "(مؤرشفة)" : "";
-        document.getElementById('end-btn').style.display = (closed || vDate !== today) ? "none" : "block";
-        document.getElementById('p-card').style.opacity = closed ? "0.4" : "1";
-        let conf = JSON.parse(localStorage.getItem('conf_'+vDate)) || {scash:0, scard:0};
-        document.getElementById('scash').value = conf.scash;
-        document.getElementById('scard').value = conf.scard;
-        document.getElementById('day-name').innerText = new Date(vDate).toLocaleDateString('ar-SA', {weekday:'long'});
+        let closed = localStorage.getItem('closed_'+vDate) === 'true';
+        let conf = JSON.parse(localStorage.getItem('conf_'+vDate)) || {scash:0, scard:0, locked:false};
+        let isToday = (vDate === today);
+
+        document.getElementById('viewing-label').style.display = isToday ? 'none' : 'block';
+        document.getElementById('closed-label').innerText = closed ? "(مؤرشف)" : "";
+        
+        let scashInp = document.getElementById('scash');
+        let scardInp = document.getElementById('scard');
+        let saveBtn = document.getElementById('save-start-btn');
+        let salesSec = document.getElementById('sales-section');
+
+        scashInp.value = conf.scash;
+        scardInp.value = conf.scard;
+
+        if(conf.locked || closed || !isToday) {
+            scashInp.disabled = true; scashInp.classList.add('locked-input');
+            scardInp.disabled = true; scardInp.classList.add('locked-input');
+            saveBtn.style.display = 'none';
+            salesSec.style.display = (closed || !isToday) ? 'none' : 'block';
+        } else {
+            scashInp.disabled = false; scashInp.classList.remove('locked-input');
+            scardInp.disabled = false; scardInp.classList.remove('locked-input');
+            saveBtn.style.display = 'block';
+            salesSec.style.display = 'none';
+        }
+
         document.getElementById('full-date').innerText = vDate;
         let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
         let h = ''; let s = { 'كاش': conf.scash, 'شبكة': conf.scard };
+        
         db.forEach(op => {
-            h += `<tr><td><strong>${op.emp}</strong></td><td>${op.t}</td><td>${op.d}</td><td>${op.a}</td><td>${op.m}</td>
-            <td>${closed ?'-':`<button onclick="retItem(${op.id})">ترجيع</button>`}</td></tr>`;
-            if(op.type==='sale') s[op.m]+=op.a;
+            let cls = op.type === 'ex' ? 'class="row-ex"' : '';
+            h += `<tr ${cls}><td>${op.emp}</td><td>${op.t}</td><td>${op.d}</td><td>${op.a}</td><td>${op.m}</td>
+            <td>${(closed || !isToday)?'-':`<button onclick="retItem(${op.id})">حذف</button>`}</td></tr>`;
+            if(op.type==='sale') s[op.m]+=op.a; else s[op.m]-=op.a;
         });
         document.getElementById('log-body').innerHTML = h;
         document.getElementById('ncash').innerText = s['كاش'];
         document.getElementById('ncard').innerText = s['شبكة'];
+        document.getElementById('end-btn').style.display = (closed || !isToday) ? "none" : "block";
     }
 
-    function clearSystemWithPass() {
-        if(currentUser !== "المدير") return alert("للمدير فقط!");
-        // هنا يطلب الرقم السري بدون أن يكون مكتوباً على الزر
-        if(prompt("أدخل الرقم السري للمتابعة:") === "12344") {
-            if(confirm("تحذير: سيتم حذف كافة البيانات. هل أنت متأكد؟")) {
-                localStorage.clear();
-                location.reload();
-            }
-        } else {
-            alert("رقم سري خاطئ!");
-        }
+    function pay(m) {
+        if(cart.length===0) return;
+        let disc = parseFloat(document.getElementById('discount').value) || 0;
+        let finalA = cart.reduce((s,i)=>s+i.p,0) - disc;
+        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
+        db.push({ emp: currentUser, id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:cart.map(c=>c.n).join(','), a:finalA, m:m, type:'sale' });
+        localStorage.setItem('db_'+vDate, JSON.stringify(db));
+        cart=[]; document.getElementById('discount').value=0; upCart(); refresh();
+    }
+
+    function addEx() {
+        let d = document.getElementById('ed').value; let a = parseFloat(document.getElementById('ea').value);
+        if(!d || isNaN(a)) return;
+        let db = JSON.parse(localStorage.getItem('db_'+vDate)) || [];
+        db.push({ emp: currentUser, id:Date.now(), t:new Date().toLocaleTimeString('ar-SA'), d:"مصروف: "+d, a:a, m:document.getElementById('em').value, type:'ex' });
+        localStorage.setItem('db_'+vDate, JSON.stringify(db));
+        document.getElementById('ed').value=''; document.getElementById('ea').value=''; refresh();
     }
 
     function calcMonth() {
@@ -227,31 +238,33 @@
             let key = localStorage.key(i);
             if (key.startsWith('db_') && key.includes(month)) {
                 let db = JSON.parse(localStorage.getItem(key));
-                db.forEach(op => { if(op.type==='sale') { if(op.m==='كاش') tCash+=op.a; else tCard+=op.a; } });
+                db.forEach(op => { if(op.type==='sale') { if(op.m==='كاش') tCash+=op.a; else tCard+=op.a; } else { if(op.m==='كاش') tCash-=op.a; else tCard-=op.a; } });
             }
         }
         let res = document.getElementById('month-result'); res.style.display = 'block';
-        res.innerHTML = `جرد (${month}):<br>💵 كاش: ${tCash}<br>💳 شبكة: ${tCard}`;
+        res.innerHTML = `<strong>جرد شهر (${month}):</strong><br>💵 كاش: ${tCash} ريال<br>💳 شبكة: ${tCard} ريال`;
     }
 
-    function addP() {
-        let n = document.getElementById('pn').value; let p = document.getElementById('pp').value;
-        if(n && p) {
-            let custom = JSON.parse(localStorage.getItem('custom_p')) || [];
-            custom.push({n, p: parseFloat(p)});
-            localStorage.setItem('custom_p', JSON.stringify(custom));
-            document.getElementById('pn').value=''; document.getElementById('pp').value=''; renderP();
-        }
+    function upCart() {
+        let total = cart.reduce((s,i)=>s+i.p,0);
+        let disc = parseFloat(document.getElementById('discount').value) || 0;
+        document.getElementById('cart-items').innerHTML = cart.map(i => `<div>• ${i.n} (${i.p})</div>`).join('');
+        document.getElementById('net-total').innerText = total - disc;
     }
 
+    function addToCart(n,p) { if(localStorage.getItem('closed_'+vDate)==='true' || vDate !== today) return; cart.push({n,p}); upCart(); }
     function renderP() {
         let custom = JSON.parse(localStorage.getItem('custom_p')) || [];
-        document.getElementById('p-list').innerHTML = [...baseP, ...custom].map(x => `<div class="p-btn" onclick="addToCart('${x.n}',${x.p})">${x.n}<br><small>${x.p} ر.س</small></div>`).join('');
+        document.getElementById('p-list').innerHTML = [...baseP, ...custom].map(x => `<div class="p-btn" onclick="addToCart('${x.n}',${x.p})">${x.n}<br>${x.p} ريال</div>`).join('');
     }
-
-    function archiveDay() { if(confirm("إغلاق الوردية؟")) { localStorage.setItem('closed_'+vDate, 'true'); refresh(); } }
-    function saveConf() { let c = {scash: parseFloat(document.getElementById('scash').value)||0, scard: parseFloat(document.getElementById('scard').value)||0}; localStorage.setItem('conf_'+vDate, JSON.stringify(c)); refresh(); }
-    function retItem(id) { let db = JSON.parse(localStorage.getItem('db_'+vDate)) || []; if(confirm("حذف العملية؟")) { db = db.filter(x => x.id !== id); localStorage.setItem('db_'+vDate, JSON.stringify(db)); refresh(); } }
+    function logout() { currentUser = ""; document.getElementById('login-screen').style.display = 'flex'; document.getElementById('main-system').style.display = 'none'; }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    function goToday() { vDate = today; refresh(); }
+    function loadDate() { vDate = document.getElementById('hist-date').value || today; refresh(); }
+    function archiveDay() { if(confirm("هل تريد إغلاق الوردية وأرشفتها؟")) { localStorage.setItem('closed_'+vDate, 'true'); refresh(); } }
+    function retItem(id) { if(confirm("حذف العملية؟")) { let db = JSON.parse(localStorage.getItem('db_'+vDate)) || []; db = db.filter(x=>x.id!==id); localStorage.setItem('db_'+vDate, JSON.stringify(db)); refresh(); } }
+    function clearSystemWithPass() { if(prompt("أدخل كلمة سر التصفية:")==="12344") { localStorage.clear(); location.reload(); } }
+    function addP() { let n=document.getElementById('pn').value; let p=document.getElementById('pp').value; if(n && p) { let c=JSON.parse(localStorage.getItem('custom_p'))||[]; c.push({n,p:parseFloat(p)}); localStorage.setItem('custom_p',JSON.stringify(c)); renderP(); } }
 
     renderP();
 </script>
