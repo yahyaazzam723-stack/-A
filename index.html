@@ -14,10 +14,15 @@
         body, html { margin: 0; padding: 0; height: 100vh; background: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
         /* شريط الإعلانات - تعديل لضمان التكرار اللانهائي وسرعة هادئة */
-        .promo-bar { background: var(--gold); color: #000; height: 30px; display: flex; align-items: center; overflow: hidden; position: absolute; top: 0; width: 100%; z-index: 1000; border-top-left-radius: 40px; border-top-right-radius: 40px; }
+        .promo-bar { background: var(--gold); color: #000; height: 30px; display: none; align-items: center; overflow: hidden; position: absolute; top: 0; width: 100%; z-index: 1000; border-top-left-radius: 40px; border-top-right-radius: 40px; }
         .promo-track { display: flex; animation: scroll-left 50s linear infinite; width: max-content; will-change: transform; }
         .promo-text-item { padding: 0 40px; font-weight: bold; font-size: 13px; white-space: nowrap; display: inline-block; }
         
+        /* شريط الكتابة النابض الجديد */
+        .typing-pulse-bar { position: absolute; top: 0; width: 100%; height: 35px; background: rgba(212, 175, 55, 0.1); display: flex; align-items: center; justify-content: center; z-index: 1001; border-bottom: 1px solid rgba(212, 175, 55, 0.3); border-top-left-radius: 40px; border-top-right-radius: 40px; }
+        .typing-text { color: var(--gold); font-weight: bold; font-size: 14px; letter-spacing: 1px; animation: textPulse 1.5s infinite; }
+        @keyframes textPulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
+
         /* التعديل: جعل الحركة تبدأ من اليمين تماماً وتنتهي عند منتصف المسار المكرر لضمان السلاسة */
         @keyframes scroll-left { 
             0% { transform: translateX(0); } 
@@ -126,6 +131,10 @@
 <audio id="searching-sound" src="https://collection.cloudinary.com/dmyfkuoxw/cabcf128e3752f3b5a356ea6934e62dd" loop preload="auto"></audio>
 
 <div class="app-shell">
+    <div class="typing-pulse-bar" id="typing-pulse-bar">
+        <div class="typing-text" id="typing-text-content">جاري جلب آخر العروض... 🦅</div>
+    </div>
+
     <div class="promo-bar" id="promo-bar">
         <div class="promo-track" id="promo-track">
             </div>
@@ -428,6 +437,10 @@
     /* التعديل الجذري على دالة تحديث شريط الإعلانات لجعلها لا نهائية */
     function updatePromoBar(text) {
         const track = document.getElementById('promo-track');
+        // تحديث النص النابض في الأعلى أيضاً
+        const typingContent = document.getElementById('typing-text-content');
+        if (typingContent && text) typingContent.innerText = text + " 🦅";
+        
         if (!track || !text) return;
         
         // تكرار النص عدة مرات لضمان تغطية عرض الشاشة + التكرار في الأنميشن
