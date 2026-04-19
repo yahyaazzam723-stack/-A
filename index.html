@@ -358,7 +358,7 @@
     let profileMap = null, mapMarker = null, mapPickup = null, mapDropoff = null, markerPickup = null, markerDropoff = null;
     let pickupLoc = {lat:0, lng:0}, dropoffLoc = {lat:0, lng:0}, historyTab = 'active', currentRating = 0, lastStatusNotified = ""; 
     let discountAmount = 0, appliedCoupon = "", paymentMethod = 'cash', pointsDiscountUsed = 0;
-    let pointsConfig = { pointsPerOrder: 0, moneyPerPoint: 0 };
+    let pointsConfig = { pointsPerOrder: 0, moneyPerPoint: 0, minOrderForBonus: 99000, bonusPoints: 5 };
 
     function showNotify(msg, type = 'success') {
         const n = document.getElementById('in-app-notify');
@@ -443,7 +443,7 @@
         
         if (!track || !text) return;
         
-        // تكرار النص عدة مرات لضمان تغطية عرض الشاشة + التكرار في الأنميشن
+        // تكرار النص عدة مرات لضمان تغطية عرض شاشة + التكرار في الأنميشن
         const item = `<span class="promo-text-item">${text} 🦅</span>`;
         
         /* التعديل: تكرار النص 12 مرة لضمان استمرار الحركة السلسة */
@@ -451,10 +451,15 @@
     }
 
     async function loadUserData() {
-        // جلب الإعدادات من Supabase (النقاط + الخبر)
+        // جلب الإعدادات من Supabase (النقاط + الخبر + حوافز الفاتورة)
         const { data: config } = await _supabase.from('app_config').select('*').eq('id', 1).single();
         if(config) {
-            pointsConfig = { pointsPerOrder: config.points_per_order, moneyPerPoint: config.money_per_point };
+            pointsConfig = { 
+                pointsPerOrder: config.points_per_order, 
+                moneyPerPoint: config.money_per_point,
+                minOrderForBonus: config.min_order_for_bonus || 99000, // الحد الأدنى للفاتورة
+                bonusPoints: config.bonus_points || 5 // النقاط الإضافية
+            };
             document.getElementById('points-config-display').innerText = `كل طلب يمنحك ${config.points_per_order} نقطة (1 نقطة = ${config.money_per_point} ل.س)`;
             updatePromoBar(config.news_text);
         }
@@ -466,6 +471,8 @@
                 showNotify("تم تحديث العروض والأسعار 🦅", "info");
             }
             if(payload.new.points_per_order) pointsConfig.pointsPerOrder = payload.new.points_per_order;
+            if(payload.new.min_order_for_bonus) pointsConfig.minOrderForBonus = payload.new.min_order_for_bonus;
+            if(payload.new.bonus_points) pointsConfig.bonusPoints = payload.new.bonus_points;
         }).subscribe();
 
         if(!currentUser) return;
@@ -618,7 +625,21 @@
         const sub = cart.reduce((s,i) => s+i.p, 0);
         const deliveryPrice = res ? res.delivery_fee : 0;
         const total = (sub + deliveryPrice) - discountAmount - pointsDiscountUsed;
-        cont.innerHTML = cart.map((i, idx) => `<div class="card"><div class="flex-reverse"><img src="${i.img}" width="40"><div><b>${i.n}</b><br>${i.p} ل.س</div><i class="fas fa-trash" onclick="removeFromCart(${idx})"></i></div></div>`).join('');
+        
+        // منطق حافز النقاط الجديد
+        let bonusNotice = "";
+        if (sub < pointsConfig.minOrderForBonus) {
+            const diff = pointsConfig.minOrderForBonus - sub;
+            bonusNotice = `<div class="card" style="background:rgba(212,175,55,0.1); border:1px dashed var(--gold); margin-bottom:10px; animation: pulse 2s infinite; text-align:center;">
+                <p style="margin:0; font-size:12px; color:var(--gold);">خلي فاتورتك بقيمة <b style="color:white;">${pointsConfig.minOrderForBonus.toLocaleString()}</b> ل.س <br> واربح <b style="color:white;">${pointsConfig.bonusPoints}</b> نقاط إضافية! باقي لك <b style="color:white;">${diff.toLocaleString()}</b> ل.س</p>
+            </div>`;
+        } else {
+            bonusNotice = `<div class="card" style="background:rgba(39, 174, 96, 0.2); border:1px solid #27ae60; margin-bottom:10px; text-align:center;">
+                <p style="margin:0; font-size:12px; color:#2ecc71;">مبروك! لقد وصلت للحد المطلوب <br> ستحصل على <b style="color:white;">${pointsConfig.bonusPoints}</b> نقاط إضافية عند تأكيد الطلب 🦅</p>
+            </div>`;
+        }
+
+        cont.innerHTML = bonusNotice + cart.map((i, idx) => `<div class="card"><div class="flex-reverse"><img src="${i.img}" width="40"><div><b>${i.n}</b><br>${i.p} ل.س</div><i class="fas fa-trash" onclick="removeFromCart(${idx})"></i></div></div>`).join('');
         sum.style.display = 'block';
         sum.innerHTML = `
             <div class="card" style="background:rgba(212,175,55,0.05); border:1px dashed var(--gold); margin-bottom:10px;">
@@ -674,6 +695,10 @@
         const orderId = 'ORD' + Date.now();
         
         let earnedPoints = pointsConfig.pointsPerOrder || 0;
+        // إضافة نقاط الحافز إذا تجاوز الحد الأدنى
+        if (sub >= pointsConfig.minOrderForBonus) {
+            earnedPoints += pointsConfig.bonusPoints;
+        }
         
         const orderData = {
             id: orderId,
