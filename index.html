@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -113,7 +114,7 @@
         .pay-option.active { border-color: var(--gold); background: rgba(212,175,55,0.1); color: var(--gold); }
 
         /* التنسيقات الجديدة للتبويبات العلوية */
-        .main-category-tabs { display: flex; background: #000; padding: 5px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(212,175,55,0.2); }
+        .main-category-tabs { display: flex; background: #000; padding: 5px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(212, 175, 55, 0.2); }
         .m-tab { flex: 1; padding: 10px; text-align: center; font-size: 12px; color: #888; cursor: pointer; border-radius: 10px; transition: 0.3s; }
         .m-tab.active { background: var(--gold); color: #000; font-weight: bold; }
         .category-view { display: none; }
@@ -183,7 +184,7 @@
     <div id="eagle-searching">
         <div class="eagle-fly"><i class="fas fa-dove"></i></div>
         <div class="pulse-text" id="searching-text">جاري البحث عن صقور الشاهين...</div>
-        <button id="cancel-btn" class="btn-gold" style="width: 80%; margin-top: 30px; background: #e74c3c; color: #fff;" onclick="cancelOrder()">إلغاء الطلب (<span id="cancel-timer">15</span>)</button>
+        <button id="cancel-btn" class="btn-gold" style="width: 80%; margin-top: 30px; background: #e74c3c; color: #fff;" onclick="cancelOrder()">إلغاء الطلب (<span id="cancel-timer">300</span>)</button>
         <small style="color: rgba(212,175,55,0.5); margin-top: 10px;">نوفي بعهدكم</small>
     </div>
 
@@ -343,7 +344,10 @@
 
 <script>
     // نظام LocalStorage بدلاً من أي قاعدة بيانات خارجية
-    const getStorage = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+    const getStorage = (key) => {
+        let val = localStorage.getItem(key);
+        try { return JSON.parse(val) || []; } catch(e) { return []; }
+    };
     const setStorage = (key, val) => localStorage.setItem(key, JSON.stringify(val));
     // إعدادات Supabase
     const SB_URL = "https://ricoslplbhphydhtrufe.supabase.co";
@@ -359,6 +363,7 @@
     let pickupLoc = {lat:0, lng:0}, dropoffLoc = {lat:0, lng:0}, historyTab = 'active', currentRating = 0, lastStatusNotified = ""; 
     let discountAmount = 0, appliedCoupon = "", paymentMethod = 'cash', pointsDiscountUsed = 0;
     let pointsConfig = { pointsPerOrder: 0, moneyPerPoint: 0, minOrderForBonus: 99000, bonusPoints: 5 };
+    let verificationCode = 0; // تم إضافة المتغير لتخزين الكود
 
     function showNotify(msg, type = 'success') {
         const n = document.getElementById('in-app-notify');
@@ -395,40 +400,48 @@
         if(!n || !e || !p || !ph || !addr) return showNotify("يرجى إكمال كافة الحقول", "error");
         
         // التسجيل عبر Supabase مع إرسال إيميل تحقق
-        const { data, error } = await _supabase.auth.signUp({
+        const { data: authResult, error } = await _supabase.auth.signUp({
             email: e,
             password: p,
             options: { data: { full_name: n, phone: ph, address: addr } }
         });
         if (error) return showNotify(error.message, "error");
         
-        showNotify("تم إرسال رسالة تحقق لإيميلك! يرجى تفعيل الحساب 📧");
-        const newUser = { uid: data.user.id, name: n, email: e, phone: ph, address: addr, points: 0, balance: 0 };
+        showNotify("تم التسجيل! يمكنك الدخول الآن 🦅");
+        const newUser = { uid: authResult.user.id, name: n, email: e, phone: ph, address: addr, points: 0, balance: 0 };
         // إضافة العميل لجدول العملاء لكي يظهر في لوحة الإدارة
-        await _supabase.from('customers').insert([{ id: data.user.id, name: n, email: e, phone: ph, address: addr, points: 0, balance: 0 }]);
+        await _supabase.from('customers').upsert([{ id: authResult.user.id, name: n, email: e, phone: ph, address: addr, points: 0, balance: 0 }]);
         localStorage.setItem('shahen_user', JSON.stringify(newUser));
         currentUser = newUser;
-        loadUserData();
+        toggleAuthMode(); // العودة لوضع تسجيل الدخول
     }
 
     async function loginUser() {
-        const e = document.getElementById('uEmail').value;
-        const p = document.getElementById('uPass').value;
+        const e = document.getElementById('uEmail').value.trim();
+        const p = document.getElementById('uPass').value.trim();
         if(!e || !p) return showNotify("يرجى إدخال البيانات", "error");
         
         // تسجيل الدخول عبر Supabase
-        const { data, error } = await _supabase.auth.signInWithPassword({ email: e, password: p });
-        if (error) return showNotify("خطأ: " + error.message, "error");
+        const { data: authResult, error: authError } = await _supabase.auth.signInWithPassword({ email: e, password: p });
         
-        // التأكد من تفعيل الإيميل
-        if (data.user && !data.user.email_confirmed_at) {
-            return showNotify("يرجى التحقق من بريدك الإلكتروني أولاً!", "error");
+        if (authError) {
+            console.error("Login error:", authError.message);
+            return showNotify("خطأ: تأكد من الإيميل وكلمة السر", "error");
+        }
+        
+        // جلب النقاط والبيانات الحقيقية (بما فيها الرصيد) من الداتابيز
+        const { data: dbCust, error: dbError } = await _supabase.from('customers').select('*').eq('id', authResult.user.id).single();
+        
+        if (dbError || !dbCust) {
+            // في حال عدم وجود سجل في جدول العملاء، نقوم بإنشائه من الميتاداتا
+            const profile = authResult.user.user_metadata;
+            const fallbackUser = { id: authResult.user.id, name: profile.full_name || "صقر شاهين", email: authResult.user.email, phone: profile.phone || "000", address: profile.address || "--", points: 0, balance: 0 };
+            await _supabase.from('customers').insert([fallbackUser]);
+            currentUser = { uid: fallbackUser.id, ...fallbackUser };
+        } else {
+            currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points, balance: dbCust.balance };
         }
 
-        const profile = data.user.user_metadata;
-        // جلب النقاط والبيانات الحقيقية (بما فيها الرصيد) من الداتابيز
-        const { data: dbCust } = await _supabase.from('customers').select('*').eq('id', data.user.id).single();
-        currentUser = { uid: data.user.id, name: profile.full_name, email: data.user.email, phone: profile.phone, address: profile.address, points: dbCust ? dbCust.points : 0, balance: dbCust ? dbCust.balance : 0 };
         localStorage.setItem('shahen_user', JSON.stringify(currentUser));
         showNotify("أهلاً بك مجدداً يا شاهين 🦅");
         loadUserData();
@@ -465,7 +478,8 @@
         }
         
         // تفعيل نظام الاستماع الفوري للتحديثات من لوحة الإدارة (Realtime)
-        _supabase.channel('config_updates').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' }, payload => {
+        _supabase.channel('config_updates')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' }, payload => {
             if(payload.new.news_text) {
                 updatePromoBar(payload.new.news_text);
                 showNotify("تم تحديث العروض والأسعار 🦅", "info");
@@ -500,6 +514,19 @@
             renderRes(); 
             const lastView = localStorage.getItem('shahen_current_view') || 'p-home';
             nav(lastView);
+            // جلب أي طلب نشط من قاعدة البيانات عند فتح التطبيق
+            _supabase.from('sh_public_orders').select('*').eq('customer_id', currentUser.uid).in('status', ['searching', 'pending', 'accepted']).single().then(({data: active}) => {
+                if(active) {
+                    currentOrderKey = active.id;
+                    localStorage.setItem('shahen_active_order_id', active.id);
+                    verificationCode = active.verify_code;
+                    document.getElementById('reveal-order-code').innerText = verificationCode;
+                    document.getElementById('client-reveal-code').innerText = verificationCode;
+                    if(active.status === 'accepted') {
+                        checkOrderAction(active.id, 'accepted');
+                    }
+                }
+            });
         }
     }
 
@@ -688,12 +715,38 @@
 
     // تعديل: الربط مع LocalStorage وإرسال البيانات للداتابيز لكي تظهر في الإدارة
     async function confirmOrderStart() {
+        // --- تعديل: فحص وجود طلب نشط وتحميله فوراً بدلاً من منع العميل ---
+        const { data: activeOrdersCheck } = await _supabase.from('sh_public_orders')
+            .select('*').eq('customer_id', currentUser.uid).in('status', ['searching', 'pending', 'accepted']);
+        if(activeOrdersCheck && activeOrdersCheck.length > 0) { 
+            const active = activeOrdersCheck[0];
+            currentOrderKey = active.id;
+            localStorage.setItem('shahen_active_order_id', active.id);
+            verificationCode = active.verify_code;
+            document.getElementById('reveal-order-code').innerText = verificationCode;
+            document.getElementById('client-reveal-code').innerText = verificationCode;
+            showNotify("لديك طلب قيد التنفيذ بالفعل! جاري نقلك للمتابعة 🦅", "info");
+            if(active.status === 'accepted') {
+                return checkOrderAction(active.id, 'accepted');
+            } else {
+                return startSearching();
+            }
+        }
+        // ----------------------------------------------------------------
+
+        // تأكد من أن الدالة لا تخرج مبكراً إذا لم يكن هناك مطعم (مثلاً طلبات وصيني)
         const res = data.find(r => r.id === currentResId);
         const sub = cart.reduce((s,i) => s+i.p, 0);
         const deliveryPrice = res ? res.delivery_fee : 0;
         const total = (sub + deliveryPrice) - discountAmount - pointsDiscountUsed;
         const orderId = 'ORD' + Date.now();
         
+        // --- تعديل: توليد كود تحقق من 4 أرقام ---
+        verificationCode = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('reveal-order-code').innerText = verificationCode;
+        document.getElementById('client-reveal-code').innerText = verificationCode;
+        // ---------------------------------------
+
         let earnedPoints = pointsConfig.pointsPerOrder || 0;
         // إضافة نقاط الحافز إذا تجاوز الحد الأدنى
         if (sub >= pointsConfig.minOrderForBonus) {
@@ -704,7 +757,7 @@
             id: orderId,
             customer_name: currentUser.name,
             phone: currentUser.phone,
-            res_name: res ? res.name : "طلب",
+            res_name: res ? res.name : "طلب خارجي",
             total: total > 0 ? total : 0,
             status: 'searching',
             date: new Date().toLocaleString('ar-SA'),
@@ -713,80 +766,115 @@
             points_spent: pointsDiscountUsed > 0 ? 100 : 0,
             delivery_price: deliveryPrice,
             restaurant_id: res ? res.id : null,
-            customer_id: currentUser.uid
-        };
-        
-        // إرسال الطلب لجدول orders في Supabase لكي يظهر في لوحة الإدارة
-        await _supabase.from('orders').insert([orderData]);
-
-        // إضافة الطلب إلى جدول sh_public_orders لكي يظهر للمناديب
-        const publicOrderData = {
-            id: orderId,
-            customer_name: currentUser.name,
-            phone: currentUser.phone,
-            res: res ? res.name : "طلب وصيني",
-            total: total > 0 ? total : 0,
-            status: 'searching',
-            items: JSON.stringify(cart),
             customer_id: currentUser.uid,
-            delivery_price: deliveryPrice
+            verify_code: verificationCode // حفظ الكود
         };
-        await _supabase.from('sh_public_orders').insert([publicOrderData]);
-
-        let orders = getStorage('orders');
-        orders.push(orderData);
-        setStorage('orders', orders);
         
-        currentOrderKey = orderId;
-        localStorage.setItem('shahen_active_order_id', orderId);
-        startSearching();
+        // التعديل: تصفية البيانات من الأعمدة التي تسبب مشاكل (phone و date) لضمان نجاح الإرسال
+        const { date: d, phone: ph, ...safeOrderData } = orderData;
+
+        // التعديل: استخدام try/catch لضمان عمل الزر وكشف أخطاء قاعدة البيانات
+        try {
+            // إرسال الطلب لجدول orders في Supabase (باستخدام البيانات المصفاة لتجاوز خطأ الكاش)
+            const { error: err1 } = await _supabase.from('orders').insert([safeOrderData]);
+            if (err1) throw err1;
+
+            // إضافة الطلب إلى جدول sh_public_orders لكي يظهر للمناديب فوراً
+            const publicOrderData = {
+                id: orderId,
+                customer_name: currentUser.name,
+                phone: currentUser.phone,
+                res: res ? res.name : "طلب وصيني/خارجي",
+                res_address: res ? (res.address || "عنوان المطعم") : "موقع الاستلام",
+                customer_address: currentUser.address || "عنوان العميل",
+                total: total > 0 ? total : 0,
+                status: 'searching',
+                items: JSON.stringify(cart),
+                customer_id: currentUser.uid,
+                delivery_price: deliveryPrice,
+                created_at: new Date().toISOString(),
+                verify_code: verificationCode, // حفظ الكود للمندوب
+                lat: userLoc.lat, // إضافة إحداثيات العميل
+                lng: userLoc.lng // إضافة إحداثيات العميل
+            };
+            const { error: err2 } = await _supabase.from('sh_public_orders').insert([publicOrderData]);
+            if (err2) throw err2;
+
+            let orders = getStorage('orders');
+            // التعديل المضاد لضمان أن orders دائماً مصفوفة قبل محاولة الإضافة إليها
+            if(!Array.isArray(orders)) orders = []; 
+            orders.push(orderData); // نحفظ الكائن الكامل محلياً ليبقى الهاتف والتاريخ ظاهرين في التطبيق
+            setStorage('orders', orders);
+            
+            currentOrderKey = orderId;
+            localStorage.setItem('shahen_active_order_id', orderId);
+            startSearching();
+        } catch (error) {
+            console.error("Database Error:", error);
+            showNotify("خطأ في الاتصال: " + (error.message || "تأكد من إعدادات قاعدة البيانات"), "error");
+        }
     }
 
     function startSearching() {
         document.getElementById('searching-sound').play();
         document.getElementById('eagle-searching').style.display = 'flex';
-        let timeLeft = 15;
+        let timeLeft = 300; // مهلة 5 دقائق (300 ثانية)
+        document.getElementById('cancel-timer').innerText = timeLeft;
+        if(cancelInterval) clearInterval(cancelInterval);
         cancelInterval = setInterval(() => {
             timeLeft--;
             document.getElementById('cancel-timer').innerText = timeLeft;
             if (timeLeft <= 0) {
+                // --- تعديل: إيقاف البحث بعد 5 دقائق وإخطار العميل ---
                 clearInterval(cancelInterval);
-                simulateAccept();
+                document.getElementById('eagle-searching').style.display = 'none';
+                document.getElementById('searching-sound').pause();
+                showNotify("عذراً، لم يتم العثور على صقور حالياً. يرجى المحاولة لاحقاً 🦅", "error");
+                cancelOrder(); // حذف الطلب من قاعدة البيانات
+                // -------------------------------------------------------
             }
         }, 1000);
+        
+        // البدء بمراقبة قاعدة البيانات حصرياً للقبول من مندوب حقيقي
+        simulateAccept(); 
     }
 
     function simulateAccept() {
-        // الاستماع لتغيير حالة الطلب في sh_public_orders من قبل المندوب
+        // التعديل: التأكد من إزالة أي قناة قديمة قبل الاشتراك الجديد لتجنب أخطاء Realtime
+        _supabase.removeChannel(_supabase.channel('order_accept_check'));
+        // الاستماع لتغيير حالة الطلب في sh_public_orders من قبل المندوب (المندوب الحقيقي فقط)
         _supabase.channel('order_accept_check')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sh_public_orders', filter: `id=eq.${currentOrderKey}` }, payload => {
                 if(payload.new.status === 'accepted') {
+                    if(cancelInterval) clearInterval(cancelInterval);
                     document.getElementById('eagle-searching').style.display = 'none';
                     document.getElementById('searching-sound').pause();
                     updateOrderStatus(currentOrderKey, 'accepted');
                     showNotify("تم قبول طلبك من قبل صقر الشاهين 🦅");
+                    // --- تعديل: عند القبول من مندوب حقيقي، نعرض شاشة كود التحقق والواتساب ---
+                    const driverWA = payload.new.driver_phone || '963947628614';
+                    const driverName = payload.new.driver_name || "صقر الشاهين 🦅";
+                    document.getElementById('driver-chat-name').innerText = driverName;
+                    document.getElementById('driver-chat-phone').innerText = driverWA;
+                    document.getElementById('call-driver-btn').onclick = () => window.open(`https://wa.me/${driverWA}`);
+                    
                     nav('p-chat');
-                    document.getElementById('driver-chat-name').innerText = "صقر الشاهين 🦅";
-                    document.getElementById('reveal-order-code').innerText = "1234"; 
+                    document.getElementById('chat-box').innerHTML = `<div class="card" style="text-align:center; background:rgba(212,175,55,0.1); border:1.5px solid var(--gold); border-radius:25px; padding:20px;">
+                        <i class="fas fa-motorcycle fa-3x" style="color:var(--gold); margin-bottom:15px;"></i>
+                        <h3 style="color:#fff;">الصقر في الطريق إليك!</h3>
+                        <p style="font-size:13px; color:#ccc; margin-bottom:15px;">يرجى تزويد المندوب بالكود التالي عند الاستلام لإنهاء الطلب:</p>
+                        <div style="background:#000; border:2px dashed var(--gold); border-radius:15px; padding:15px; font-size:35px; font-weight:bold; letter-spacing:10px; color:var(--gold); margin-bottom:20px;">${verificationCode}</div>
+                        <button class="btn-gold" style="background:#25d366; color:#fff;" onclick="window.open('https://wa.me/${driverWA}')">
+                            <i class="fab fa-whatsapp"></i> تواصل مع الصقر (واتساب)
+                        </button>
+                    </div>`;
                     document.getElementById('client-code-notice').style.display = 'block';
                     document.getElementById('delivery-confirm-box').style.display = 'block';
                 }
+                if(payload.new.status === 'completed') {
+                    document.getElementById('rating-overlay').style.display = 'flex';
+                }
             }).subscribe();
-            
-        // في حال عدم وجود مندوب فعلي حالياً (للتجربة) سنبقي المحاكاة القديمة تعمل بعد 15 ثانية
-        setTimeout(() => {
-            if(document.getElementById('eagle-searching').style.display === 'flex') {
-                document.getElementById('eagle-searching').style.display = 'none';
-                document.getElementById('searching-sound').pause();
-                updateOrderStatus(currentOrderKey, 'accepted');
-                showNotify("تم قبول طلبك من قبل صقر الشاهين (محاكاة) 🦅");
-                nav('p-chat');
-                document.getElementById('driver-chat-name').innerText = "صقر الشاهين (أبو فهد)";
-                document.getElementById('reveal-order-code').innerText = "1234"; 
-                document.getElementById('client-code-notice').style.display = 'block';
-                document.getElementById('delivery-confirm-box').style.display = 'block';
-            }
-        }, 16000);
     }
 
     // تعديل: تحديث الحالة وتزامن النقاط + تسجيل الفاتورة في Ledger
@@ -830,7 +918,7 @@
         orders = orders.filter(o => o.id !== currentOrderKey);
         setStorage('orders', orders);
         localStorage.removeItem('shahen_active_order_id');
-        clearInterval(cancelInterval);
+        if(cancelInterval) clearInterval(cancelInterval);
         document.getElementById('eagle-searching').style.display = 'none';
         document.getElementById('searching-sound').pause();
         showNotify("تم الإلغاء", "error");
@@ -839,15 +927,67 @@
     function renderHistory() {
         const cont = document.getElementById('history-content');
         const orders = getStorage('orders');
-        if(orders.length === 0) return cont.innerHTML = "<p style='text-align:center;'>لا توجد طلبات</p>";
-        cont.innerHTML = orders.map(o => `
-            <div class="card">
+        // --- تعديل: فصل الطلبات النشطة والسابقة ديناميكياً لتجنب التعليق ---
+        const activeOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+        const pastOrders = orders.filter(o => o.status === 'completed' || o.status === 'cancelled');
+        const currentList = historyTab === 'active' ? activeOrders : pastOrders;
+        // ---------------------------------------------------------------
+        if(!Array.isArray(orders) || currentList.length === 0) return cont.innerHTML = "<p style='text-align:center;'>لا توجد طلبات</p>";
+        // --- تعديل: إضافة وظيفة الضغط على الطلب النشط للتحويل للدردشة أو البحث ---
+        cont.innerHTML = currentList.map(o => `
+            <div class="card" onclick="${o.status !== 'completed' && o.status !== 'cancelled' ? `checkOrderAction('${o.id}', '${o.status}')` : ''}" style="${o.status !== 'completed' && o.status !== 'cancelled' ? 'cursor:pointer;' : ''}">
                 <div class="flex-reverse"><b>${o.res_name || 'طلب وصيني'}</b><span>${o.total.toLocaleString()} ل.س</span></div>
-                <div class="flex-reverse" style="margin-top:5px;"><small>${o.date}</small><small style="color:var(--gold)">${o.status === 'completed' ? 'تم التوصيل' : 'نشط'}</small></div>
+                <div class="flex-reverse" style="margin-top:5px;"><small>${o.date}</small><small style="color:var(--gold)">${o.status === 'completed' ? 'تم التوصيل' : (o.status === 'cancelled' ? 'ملغي' : 'قيد التنفيذ')}</small></div>
                 ${o.points_earned > 0 && o.status === 'completed' ? `<div style="font-size:10px; color:var(--gold); margin-top:5px;"><i class="fas fa-plus"></i> حصلت على ${o.points_earned} نقاط شاهين</div>` : ''}
+                ${o.status !== 'completed' && o.status !== 'cancelled' ? `<div style="font-size:10px; color:var(--gold); text-align:center; margin-top:8px; border-top:1px solid rgba(212,175,55,0.1); padding-top:5px;">إضغط للمتابعة 🦅</div>` : ''}
             </div>
         `).join('');
     }
+
+    // --- تعديل: دالة فحص حالة الطلب عند الضغط عليه من السجل ---
+    function checkOrderAction(id, status) {
+        currentOrderKey = id;
+        localStorage.setItem('shahen_active_order_id', id);
+        if (status === 'accepted') {
+            // جلب بيانات الطلب من قاعدة البيانات لتحديث كود التحقق
+            _supabase.from('sh_public_orders').select('*').eq('id', id).single().then(({data: active}) => {
+                if(active) {
+                    verificationCode = active.verify_code;
+                    document.getElementById('reveal-order-code').innerText = verificationCode;
+                    document.getElementById('client-reveal-code').innerText = verificationCode;
+                    const driverWA = active.driver_phone || '963947628614';
+                    const driverName = active.driver_name || "صقر الشاهين 🦅";
+                    document.getElementById('driver-chat-name').innerText = driverName;
+                    nav('p-chat');
+                    document.getElementById('chat-box').innerHTML = `<div class="card" style="text-align:center; background:rgba(212,175,55,0.1); border:1.5px solid var(--gold); border-radius:25px; padding:20px;">
+                        <i class="fas fa-motorcycle fa-3x" style="color:var(--gold); margin-bottom:15px;"></i>
+                        <h3 style="color:#fff;">الصقر في الطريق إليك!</h3>
+                        <p style="font-size:13px; color:#ccc; margin-bottom:15px;">يرجى تزويد المندوب بالكود التالي عند الاستلام لإنهاء الطلب:</p>
+                        <div style="background:#000; border:2px dashed var(--gold); border-radius:15px; padding:15px; font-size:35px; font-weight:bold; letter-spacing:10px; color:var(--gold); margin-bottom:20px;">${verificationCode}</div>
+                        <button class="btn-gold" style="background:#25d366; color:#fff;" onclick="window.open('https://wa.me/${driverWA}')">
+                            <i class="fab fa-whatsapp"></i> تواصل مع الصقر (واتساب)
+                        </button>
+                    </div>`;
+                    document.getElementById('client-code-notice').style.display = 'block';
+                    document.getElementById('delivery-confirm-box').style.display = 'block';
+                }
+            });
+        } else {
+            showNotify("جاري البحث عن صقر.. يرجى الانتظار 🦅", "info");
+            document.getElementById('eagle-searching').style.display = 'flex';
+            simulateAccept(); 
+        }
+    }
+    // -----------------------------------------------------------
+
+    // --- تعديل: دالة فحص حالة الطلب عند الضغط عليه من السجل ---
+    function switchHistoryTab(tab) {
+        historyTab = tab;
+        document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        renderHistory();
+    }
+    // ------------------------------------------
 
     function showVerifyCodeToClient() { document.getElementById('rating-overlay').style.display = 'flex'; }
     function setStars(s) { currentRating = s; document.querySelectorAll('#main-rating-stars i').forEach((st, i) => st.className = i < s ? 'fas fa-star star-active' : 'fas fa-star'); }
