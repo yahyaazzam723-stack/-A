@@ -30,13 +30,13 @@
         }
 
         /* ظل الشعار الملكي الواضح في وسط الصفحة البنفسجية */
-        .royal-bg-shadow { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; height: 380px; background: url('https://i.postimg.cc/3RmMjYNd/Whats-App-Image-2026-04-10-at-6-22-30-PM.jpg') no-repeat center/contain; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(100%) brightness(0.6); }
+        .royal-bg-shadow { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; height: 380px; background: url('https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8') no-repeat center/contain; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(100%) brightness(0.6); }
         
         /* إطار التطبيق باللون البنفسجي المطلب */
         .app-shell { width: 375px; height: 812px; max-height: 95vh; background: var(--purple); border: 2px solid rgba(212,175,55,0.3); border-radius: 40px; position: relative; display: flex; flex-direction: column; overflow: hidden; z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,1); padding-top: 40px; }
         
         /* ظل الصورة المطلوب في وسط الإطار تماماً */
-        .app-shell::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 320px; background: url('https://i.postimg.cc/3RmMjYNd/Whats-App-Image-2026-04-10-at-6-22-30-PM.jpg') no-repeat center/contain; opacity: 0.08; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
+        .app-shell::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 320px; background: url('https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8') no-repeat center/contain; opacity: 0.08; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
 
         /* نظام الإشعارات الداخلي الجديد */
         #in-app-notify { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; padding: 15px; border-radius: 20px; text-align: center; font-weight: bold; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -176,7 +176,7 @@
     </div>
 
     <div id="eagle-confirm">
-        <img src="https://i.postimg.cc/3RmMjYNd/Whats-App-Image-2026-04-10-at-6-22-30-PM.jpg" class="confirm-logo">
+        <img src="https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8" class="confirm-logo">
         <h1 style="color:var(--gold); margin-top:20px;">نوفي بعهدكم</h1>
     </div>
 
@@ -189,14 +189,14 @@
 
     <div id="p-login" class="page active" style="justify-content:center; text-align:center;">
         <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 30px;">
-            <img src="https://i.postimg.cc/3RmMjYNd/Whats-App-Image-2026-04-10-at-6-22-30-PM.jpg" width="130" style="border-radius:35px; border:3px solid var(--gold);">
+            <img src="https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8" width="130" style="border-radius:35px; border:3px solid var(--gold);">
         </div>
         <div id="login-form-ui">
             <h2 style="color:var(--gold)" id="auth-title">سجل دخولك يا شاهين 🦅</h2>
             <div id="register-fields" style="display: none;">
                 <input type="text" id="uName" placeholder="الاسم الكامل">
                 <input type="tel" id="uPhone" placeholder="رقم الجوال">
-                <input type="text" id="uAddress" placeholder="العنوان بالتفصيل (يدوياً)">
+                <input type="text" id="uAddress" placeholder="العنوان (يدوياً + أقرب معلم احتياط)">
             </div>
             <input type="email" id="uEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="uPass" placeholder="كلمة السر">
@@ -230,9 +230,15 @@
             <div class="card" style="border:1px dashed var(--gold);">
                 <p style="font-size:13px; color:#ddd;">حدد موقع الاستلام وموقع التسليم وصقرنا بيخلصك!</p>
                 <div id="map-pickup" class="wassayni-map"></div>
-                <small style="color:var(--gold)">📍 حدد موقع الاستلام (المحل/المكان)</small>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <small style="color:var(--gold)">📍 حدد موقع الاستلام (المحل/المكان)</small>
+                  <button onclick="updateGPSWassayni('pickup')" style="background:none; border:1px solid var(--gold); color:var(--gold); font-size:10px; border-radius:5px; padding:2px 5px;">جلب موقعي 📡</button>
+                </div>
                 <div id="map-dropoff" class="wassayni-map" style="margin-top:15px;"></div>
-                <small style="color:var(--gold)">📍 حدد موقع التسليم (منزلك)</small>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <small style="color:var(--gold)">📍 حدد موقع التسليم (منزلك)</small>
+                  <button onclick="updateGPSWassayni('dropoff')" style="background:none; border:1px solid var(--gold); color:var(--gold); font-size:10px; border-radius:5px; padding:2px 5px;">جلب موقعي 📡</button>
+                </div>
                 
                 <textarea id="wassayni-task" placeholder="اكتب طلبك بالتفصيل هنا..." style="width:100%; background:#000; color:#fff; border:1px solid #333; border-radius:12px; padding:15px; height:100px; margin-top:15px; resize: none;"></textarea>
                 <input type="text" id="wassayni-addr" placeholder="وصف إضافي للعنوان">
@@ -317,8 +323,14 @@
 
         <h3 style="color:var(--gold); font-size: 14px; margin-top: 10px;">تواصل مع الإدارة 🦅</h3>
         <div class="card" style="display: flex; flex-direction: row; justify-content: space-around; gap: 12px; padding: 15px;">
-            <a href="https://wa.me/963947628614" target="_blank" style="text-decoration: none;">
+            <a href="https://wa.me/966546083283" target="_blank" style="text-decoration: none;">
                 <i class="fab fa-whatsapp" style="color: #25d366; font-size: 35px;"></i>
+            </a>
+            <a href="#" target="_blank" style="text-decoration: none;">
+                <i class="fab fa-facebook" style="color: #1877f2; font-size: 35px;"></i>
+            </a>
+            <a href="#" target="_blank" style="text-decoration: none;">
+                <i class="fab fa-instagram" style="color: #e4405f; font-size: 35px;"></i>
             </a>
         </div>
         
@@ -566,6 +578,24 @@
         }
     }
 
+    function updateGPSWassayni(type) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+          if(type === 'pickup') {
+            pickupLoc = loc; mapPickup.setView([loc.lat, loc.lng], 16);
+            if(markerPickup) mapPickup.removeLayer(markerPickup);
+            markerPickup = L.marker(loc).addTo(mapPickup);
+          } else {
+            dropoffLoc = loc; mapDropoff.setView([loc.lat, loc.lng], 16);
+            if(markerDropoff) mapDropoff.removeLayer(markerDropoff);
+            markerDropoff = L.marker(loc).addTo(mapDropoff);
+          }
+          showNotify("تم تحديد الموقع بنجاح ✅");
+        });
+      }
+    }
+
     async function renderPharmacies() {
         const { data: pharma } = await _supabase.from('pharmacies').select('*');
         if(pharma) pharmacyData = pharma;
@@ -585,7 +615,7 @@
             <div class="card menu-card" style="cursor:pointer;"><div class="flex-reverse">
                 <img src="${m.img || 'https://via.placeholder.com/150'}" width="60" style="border-radius:10px;">
                 <div style="flex:1; text-align:center;"><b>${m.n}</b><br><b style="color:var(--gold)">${m.p} ل.س</b></div>
-                <i class="fas fa-plus-circle" style="color:var(--gold);" onclick="addToCart('${res.id}','${m.n}',${m.p},'${m.img}')"></i>
+                <i class="fas fa-plus-circle" style="color:var(--gold); font-size:28px;" onclick="addToCart('${res.id}','${m.n}',${m.p},'${m.img}')"></i>
             </div></div>
         `).join('') : '<p style="text-align:center">لا يوجد منيو متوفر حالياً</p>';
         nav('p-menu');
@@ -851,7 +881,7 @@
                     updateOrderStatus(currentOrderKey, 'accepted');
                     showNotify("تم قبول طلبك من قبل صقر الشاهين 🦅");
                     // --- تعديل: عند القبول من مندوب حقيقي، نعرض شاشة كود التحقق والواتساب ---
-                    const driverWA = payload.new.driver_phone || '963947628614';
+                    const driverWA = payload.new.driver_phone || '966546083283';
                     const driverName = payload.new.driver_name || "صقر الشاهين 🦅";
                     document.getElementById('driver-chat-name').innerText = driverName;
                     document.getElementById('driver-chat-phone').innerText = driverWA;
@@ -872,6 +902,10 @@
                 }
                 if(payload.new.status === 'completed') {
                     document.getElementById('rating-overlay').style.display = 'flex';
+                }
+                if(payload.new.status === 'cancelled') {
+                    showNotify("عذراً، المندوب ألغى الطلب. جاري إعادة البحث..", "error");
+                    nav('p-history');
                 }
             }).subscribe();
     }
@@ -938,6 +972,7 @@
                 <div class="flex-reverse"><b>${o.res_name || 'طلب وصيني'}</b><span>${o.total.toLocaleString()} ل.س</span></div>
                 <div class="flex-reverse" style="margin-top:5px;"><small>${o.date}</small><small style="color:var(--gold)">${o.status === 'completed' ? 'تم التوصيل' : (o.status === 'cancelled' ? 'ملغي' : 'قيد التنفيذ')}</small></div>
                 ${o.points_earned > 0 && o.status === 'completed' ? `<div style="font-size:10px; color:var(--gold); margin-top:5px;"><i class="fas fa-plus"></i> حصلت على ${o.points_earned} نقاط شاهين</div>` : ''}
+                ${o.status === 'completed' ? `<button onclick="sendComplaint('طلب #${o.id}')" class="complaint-btn"><i class="fas fa-exclamation-circle"></i> تقديم شكوى للإدارة</button>` : ''}
                 ${o.status !== 'completed' && o.status !== 'cancelled' ? `<div style="font-size:10px; color:var(--gold); text-align:center; margin-top:8px; border-top:1px solid rgba(212,175,55,0.1); padding-top:5px;">إضغط للمتابعة 🦅</div>` : ''}
             </div>
         `).join('');
@@ -954,7 +989,7 @@
                     verificationCode = active.verify_code;
                     document.getElementById('reveal-order-code').innerText = verificationCode;
                     document.getElementById('client-reveal-code').innerText = verificationCode;
-                    const driverWA = active.driver_phone || '963947628614';
+                    const driverWA = active.driver_phone || '966546083283';
                     const driverName = active.driver_name || "صقر الشاهين 🦅";
                     document.getElementById('driver-chat-name').innerText = driverName;
                     nav('p-chat');
@@ -977,18 +1012,22 @@
             simulateAccept(); 
         }
     }
-    // -----------------------------------------------------------
 
-    // --- تعديل: دالة فحص حالة الطلب عند الضغط عليه من السجل ---
     function switchHistoryTab(tab) {
         historyTab = tab;
         document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab-' + tab).classList.add('active');
         renderHistory();
     }
-    // ------------------------------------------
 
-    function showVerifyCodeToClient() { document.getElementById('rating-overlay').style.display = 'flex'; }
+    async function showVerifyCodeToClient() { 
+      const { data } = await _supabase.from('sh_public_orders').select('status').eq('id', currentOrderKey).single();
+      if(data && data.status === 'completed') {
+        document.getElementById('rating-overlay').style.display = 'flex'; 
+      } else {
+        showNotify("يرجى الانتظار حتى يقوم المندوب بإدخال الكود أولاً 🦅", "error");
+      }
+    }
     function setStars(s) { currentRating = s; document.querySelectorAll('#main-rating-stars i').forEach((st, i) => st.className = i < s ? 'fas fa-star star-active' : 'fas fa-star'); }
 
     function submitMandatoryRating() {
@@ -998,6 +1037,9 @@
         currentOrderKey = null;
         pointsDiscountUsed = 0;
         discountAmount = 0;
+        cart = []; // تصفير مصفوفة السلة لضمان عدم بقاء الطلبات القديمة
+        document.getElementById('badge').innerText = 0; // تصفير العداد المرئي
+        document.getElementById('badge').style.display = 'none'; // إخفاء الدائرة الحمراء
         document.getElementById('rating-overlay').style.display = 'none';
         showNotify("تم إنهاء الرحلة، شكراً لك 🦅\nتم تحديث رصيد نقاطك!");
         nav('p-history');
@@ -1022,6 +1064,23 @@
             mapMarker = L.marker([userLoc.lat, userLoc.lng]).addTo(profileMap);
         }
     }
+
+    function updateGPSProfile() {
+        if (navigator.geolocation) {
+            showNotify("جاري تحديد موقعك بدقة... 📡", "info");
+            navigator.geolocation.getCurrentPosition((position) => {
+                userLoc = { lat: position.coords.latitude, lng: position.coords.longitude };
+                if(profileMap) {
+                    profileMap.setView([userLoc.lat, userLoc.lng], 16);
+                    if(mapMarker) profileMap.removeLayer(mapMarker);
+                    mapMarker = L.marker([userLoc.lat, userLoc.lng]).addTo(profileMap);
+                    showNotify("تم تحديد الموقع بدقة ✅");
+                }
+            }, () => showNotify("فشل جلب الموقع، يرجى تفعيل GPS", "error"), { enableHighAccuracy: true });
+        }
+    }
+
+    function sendComplaint(context) { window.open(`https://wa.me/966546083283?text=شكوى بخصوص: ${context}`); }
 
     window.onload = () => { loadUserData(); if(!currentUser) nav('p-login'); };
 </script>
