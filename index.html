@@ -30,13 +30,13 @@
         }
 
         /* ظل الشعار الملكي الواضح في وسط الصفحة البنفسجية */
-        .royal-bg-shadow { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; height: 380px; background: url('https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8') no-repeat center/contain; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(100%) brightness(0.6); }
+        .royal-bg-shadow { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; height: 380px; background: url('https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg') no-repeat center/contain; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(100%) brightness(0.6); }
         
         /* إطار التطبيق باللون البنفسجي المطلب */
         .app-shell { width: 375px; height: 812px; max-height: 95vh; background: var(--purple); border: 2px solid rgba(212,175,55,0.3); border-radius: 40px; position: relative; display: flex; flex-direction: column; overflow: hidden; z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,1); padding-top: 40px; }
         
         /* ظل الصورة المطلوب في وسط الإطار تماماً */
-        .app-shell::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 320px; background: url('https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8') no-repeat center/contain; opacity: 0.08; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
+        .app-shell::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 320px; background: url('https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg') no-repeat center/contain; opacity: 0.08; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
 
         /* نظام الإشعارات الداخلي الجديد */
         #in-app-notify { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; padding: 15px; border-radius: 20px; text-align: center; font-weight: bold; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -176,7 +176,7 @@
     </div>
 
     <div id="eagle-confirm">
-        <img src="https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8" class="confirm-logo">
+        <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" class="confirm-logo">
         <h1 style="color:var(--gold); margin-top:20px;">نوفي بعهدكم</h1>
     </div>
 
@@ -189,7 +189,7 @@
 
     <div id="p-login" class="page active" style="justify-content:center; text-align:center;">
         <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 30px;">
-            <img src="https://lh3.googleusercontent.com/d/1FlIhkz2xREiuwhQD35kkWs6xGWrvPQS8" width="130" style="border-radius:35px; border:3px solid var(--gold);">
+            <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" width="130" style="border-radius:35px; border:3px solid var(--gold);">
         </div>
         <div id="login-form-ui">
             <h2 style="color:var(--gold)" id="auth-title">سجل دخولك يا شاهين 🦅</h2>
@@ -354,13 +354,11 @@
 </div>
 
 <script>
-    // نظام LocalStorage بدلاً من أي قاعدة بيانات خارجية
     const getStorage = (key) => {
         let val = localStorage.getItem(key);
         try { return JSON.parse(val) || []; } catch(e) { return []; }
     };
     const setStorage = (key, val) => localStorage.setItem(key, JSON.stringify(val));
-    // إعدادات Supabase
     const SB_URL = "https://ricoslplbhphydhtrufe.supabase.co";
     const SB_KEY = "sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
@@ -374,7 +372,7 @@
     let pickupLoc = {lat:0, lng:0}, dropoffLoc = {lat:0, lng:0}, historyTab = 'active', currentRating = 0, lastStatusNotified = ""; 
     let discountAmount = 0, appliedCoupon = "", paymentMethod = 'cash', pointsDiscountUsed = 0;
     let pointsConfig = { pointsPerOrder: 0, moneyPerPoint: 0, minOrderForBonus: 99000, bonusPoints: 5 };
-    let verificationCode = 0; // تم إضافة المتغير لتخزين الكود
+    let verificationCode = 0; 
 
     function showNotify(msg, type = 'success') {
         const n = document.getElementById('in-app-notify');
@@ -394,14 +392,6 @@
         document.getElementById('auth-btn').setAttribute('onclick', isLoginMode ? 'loginUser()' : 'registerUser()');
     }
 
-    function acceptPledge() {
-        if(!document.getElementById('pledge-check').checked) return showNotify("يجب الموافقة على التعهد للمتابعة", "error");
-        localStorage.setItem('shahen_pledge', 'accepted');
-        document.getElementById('p-pledge').style.display = 'none';
-        document.getElementById('tab-bar').style.display = 'flex';
-        renderRes(); nav('p-home');
-    }
-
     async function registerUser() {
         const n = document.getElementById('uName').value;
         const e = document.getElementById('uEmail').value;
@@ -410,21 +400,22 @@
         const addr = document.getElementById('uAddress').value;
         if(!n || !e || !p || !ph || !addr) return showNotify("يرجى إكمال كافة الحقول", "error");
         
-        // التسجيل عبر Supabase مع إرسال إيميل تحقق
         const { data: authResult, error } = await _supabase.auth.signUp({
             email: e,
             password: p,
             options: { data: { full_name: n, phone: ph, address: addr } }
         });
-        if (error) return showNotify(error.message, "error");
+        if (error) {
+            if(error.message.includes("User already registered")) return showNotify("هذا الحساب مسجل مسبقاً، يرجى تسجيل الدخول", "error");
+            return showNotify(error.message, "error");
+        }
         
         showNotify("تم التسجيل! يمكنك الدخول الآن 🦅");
         const newUser = { uid: authResult.user.id, name: n, email: e, phone: ph, address: addr, points: 0, balance: 0 };
-        // إضافة العميل لجدول العملاء لكي يظهر في لوحة الإدارة
         await _supabase.from('customers').upsert([{ id: authResult.user.id, name: n, email: e, phone: ph, address: addr, points: 0, balance: 0 }]);
         localStorage.setItem('shahen_user', JSON.stringify(newUser));
         currentUser = newUser;
-        toggleAuthMode(); // العودة لوضع تسجيل الدخول
+        toggleAuthMode(); 
     }
 
     async function loginUser() {
@@ -432,7 +423,6 @@
         const p = document.getElementById('uPass').value.trim();
         if(!e || !p) return showNotify("يرجى إدخال البيانات", "error");
         
-        // تسجيل الدخول عبر Supabase
         const { data: authResult, error: authError } = await _supabase.auth.signInWithPassword({ email: e, password: p });
         
         if (authError) {
@@ -440,11 +430,9 @@
             return showNotify("خطأ: تأكد من الإيميل وكلمة السر", "error");
         }
         
-        // جلب النقاط والبيانات الحقيقية (بما فيها الرصيد) من الداتابيز
         const { data: dbCust, error: dbError } = await _supabase.from('customers').select('*').eq('id', authResult.user.id).single();
         
         if (dbError || !dbCust) {
-            // في حال عدم وجود سجل في جدول العملاء، نقوم بإنشائه من الميتاداتا
             const profile = authResult.user.user_metadata;
             const fallbackUser = { id: authResult.user.id, name: profile.full_name || "صقر شاهين", email: authResult.user.email, phone: profile.phone || "000", address: profile.address || "--", points: 0, balance: 0 };
             await _supabase.from('customers').insert([fallbackUser]);
@@ -455,40 +443,39 @@
 
         localStorage.setItem('shahen_user', JSON.stringify(currentUser));
         showNotify("أهلاً بك مجدداً يا شاهين 🦅");
-        loadUserData();
+        setTimeout(() => location.reload(), 800);
     }
 
-    /* التعديل الجذري على دالة تحديث شريط الإعلانات لجعلها لا نهائية */
+    function acceptPledge() {
+        if(!document.getElementById('pledge-check').checked) return showNotify("يجب الموافقة على التعهد للمتابعة", "error");
+        localStorage.setItem('shahen_pledge', 'accepted');
+        document.getElementById('p-pledge').style.display = 'none';
+        document.getElementById('tab-bar').style.display = 'flex';
+        renderRes(); nav('p-home');
+    }
+
     function updatePromoBar(text) {
         const track = document.getElementById('promo-track');
-        // تحديث النص النابض في الأعلى أيضاً
         const typingContent = document.getElementById('typing-text-content');
         if (typingContent && text) typingContent.innerText = text + " 🦅";
-        
         if (!track || !text) return;
-        
-        // تكرار النص عدة مرات لضمان تغطية عرض شاشة + التكرار في الأنميشن
         const item = `<span class="promo-text-item">${text} 🦅</span>`;
-        
-        /* التعديل: تكرار النص 12 مرة لضمان استمرار الحركة السلسة */
         track.innerHTML = item.repeat(12);
     }
 
     async function loadUserData() {
-        // جلب الإعدادات من Supabase (النقاط + الخبر + حوافز الفاتورة)
         const { data: config } = await _supabase.from('app_config').select('*').eq('id', 1).single();
         if(config) {
             pointsConfig = { 
                 pointsPerOrder: config.points_per_order, 
                 moneyPerPoint: config.money_per_point,
-                minOrderForBonus: config.min_order_for_bonus || 99000, // الحد الأدنى للفاتورة
-                bonusPoints: config.bonus_points || 5 // النقاط الإضافية
+                minOrderForBonus: config.min_order_for_bonus || 99000, 
+                bonusPoints: config.bonus_points || 5 
             };
             document.getElementById('points-config-display').innerText = `كل طلب يمنحك ${config.points_per_order} نقطة (1 نقطة = ${config.money_per_point} ل.س)`;
             updatePromoBar(config.news_text);
         }
         
-        // تفعيل نظام الاستماع الفوري للتحديثات من لوحة الإدارة (Realtime)
         _supabase.channel('config_updates')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' }, payload => {
             if(payload.new.news_text) {
@@ -502,11 +489,11 @@
 
         if(!currentUser) return;
 
-        // تحديث الرصيد والنقاط من الداتابيز دورياً (لضمان رؤية الشحن من الإدارة)
-        const { data: dbUser } = await _supabase.from('customers').select('balance, points').eq('id', currentUser.uid).single();
+        const { data: dbUser } = await _supabase.from('customers').select('balance, points, address').eq('id', currentUser.uid).single();
         if(dbUser) {
             currentUser.balance = dbUser.balance;
             currentUser.points = dbUser.points;
+            currentUser.address = dbUser.address;
             localStorage.setItem('shahen_user', JSON.stringify(currentUser));
         }
 
@@ -525,7 +512,7 @@
             renderRes(); 
             const lastView = localStorage.getItem('shahen_current_view') || 'p-home';
             nav(lastView);
-            // جلب أي طلب نشط من قاعدة البيانات عند فتح التطبيق
+            
             _supabase.from('sh_public_orders').select('*').eq('customer_id', currentUser.uid).in('status', ['searching', 'pending', 'accepted']).single().then(({data: active}) => {
                 if(active) {
                     currentOrderKey = active.id;
@@ -535,13 +522,13 @@
                     document.getElementById('client-reveal-code').innerText = verificationCode;
                     if(active.status === 'accepted') {
                         checkOrderAction(active.id, 'accepted');
+                    } else {
+                        startSearching();
                     }
                 }
             });
         }
     }
-
-    function logout() { localStorage.clear(); location.reload(); }
 
     async function renderRes() {
         const { data: dbData, error } = await _supabase.from('restaurants').select('*');
@@ -639,26 +626,18 @@
     function nav(id, event = null) {
         if (event) { event.preventDefault(); event.stopPropagation(); }
         localStorage.setItem('shahen_current_view', id);
-        // إخفاء جميع الصفحات أولاً
         document.querySelectorAll('.page').forEach(p => { 
             p.classList.remove('active'); 
             p.style.display = 'none'; 
         });
-        
-        // إظهار الصفحة المطلوبة
         const target = document.getElementById(id);
         if (target) {
             target.classList.add('active'); 
-            // تأكد من استخدام flex لعرض محتوى الصفحة بشكل عمودي
             target.style.display = 'flex'; 
         }
-
-        // تحديث التبويب النشط في الأسفل
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         const activeTab = document.querySelector(`.tab-item[onclick*="'${id}'"]`);
         if (activeTab) activeTab.classList.add('active');
-
-        // استدعاء دوال الرندر المناسبة لكل صفحة
         if(id === 'p-cart') renderCart();
         if(id === 'p-history') renderHistory();
         if(id === 'p-profile') { loadUserData(); initProfileMap(); }
@@ -682,7 +661,6 @@
         const deliveryPrice = res ? res.delivery_fee : 0;
         const total = (sub + deliveryPrice) - discountAmount - pointsDiscountUsed;
         
-        // منطق حافز النقاط الجديد
         let bonusNotice = "";
         if (sub < pointsConfig.minOrderForBonus) {
             const diff = pointsConfig.minOrderForBonus - sub;
@@ -737,14 +715,12 @@
 
     function usePointsDiscount() {
         if(currentUser.points < 100) return showNotify("تحتاج إلى 100 نقطة على الأقل", "error");
-        pointsDiscountUsed = 40000; // خصم 40,000 ل.س
+        pointsDiscountUsed = 40000; 
         showNotify("تم تطبيق خصم نقاط الشاهين 🦅");
         renderCart();
     }
 
-    // تعديل: الربط مع LocalStorage وإرسال البيانات للداتابيز لكي تظهر في الإدارة
     async function confirmOrderStart() {
-        // --- تعديل: فحص وجود طلب نشط وتحميله فوراً بدلاً من منع العميل ---
         const { data: activeOrdersCheck } = await _supabase.from('sh_public_orders')
             .select('*').eq('customer_id', currentUser.uid).in('status', ['searching', 'pending', 'accepted']);
         if(activeOrdersCheck && activeOrdersCheck.length > 0) { 
@@ -761,23 +737,18 @@
                 return startSearching();
             }
         }
-        // ----------------------------------------------------------------
 
-        // تأكد من أن الدالة لا تخرج مبكراً إذا لم يكن هناك مطعم (مثلاً طلبات وصيني)
         const res = data.find(r => r.id === currentResId);
         const sub = cart.reduce((s,i) => s+i.p, 0);
         const deliveryPrice = res ? res.delivery_fee : 0;
         const total = (sub + deliveryPrice) - discountAmount - pointsDiscountUsed;
         const orderId = 'ORD' + Date.now();
         
-        // --- تعديل: توليد كود تحقق من 4 أرقام ---
         verificationCode = Math.floor(1000 + Math.random() * 9000);
         document.getElementById('reveal-order-code').innerText = verificationCode;
         document.getElementById('client-reveal-code').innerText = verificationCode;
-        // ---------------------------------------
 
         let earnedPoints = pointsConfig.pointsPerOrder || 0;
-        // إضافة نقاط الحافز إذا تجاوز الحد الأدنى
         if (sub >= pointsConfig.minOrderForBonus) {
             earnedPoints += pointsConfig.bonusPoints;
         }
@@ -796,19 +767,15 @@
             delivery_price: deliveryPrice,
             restaurant_id: res ? res.id : null,
             customer_id: currentUser.uid,
-            verify_code: verificationCode // حفظ الكود
+            verify_code: verificationCode
         };
         
-        // التعديل: تصفية البيانات من الأعمدة التي تسبب مشاكل (phone و date) لضمان نجاح الإرسال
         const { date: d, phone: ph, ...safeOrderData } = orderData;
 
-        // التعديل: استخدام try/catch لضمان عمل الزر وكشف أخطاء قاعدة البيانات
         try {
-            // إرسال الطلب لجدول orders في Supabase (باستخدام البيانات المصفاة لتجاوز خطأ الكاش)
             const { error: err1 } = await _supabase.from('orders').insert([safeOrderData]);
             if (err1) throw err1;
 
-            // إضافة الطلب إلى جدول sh_public_orders لكي يظهر للمناديب فوراً
             const publicOrderData = {
                 id: orderId,
                 customer_name: currentUser.name,
@@ -822,17 +789,17 @@
                 customer_id: currentUser.uid,
                 delivery_price: deliveryPrice,
                 created_at: new Date().toISOString(),
-                verify_code: verificationCode, // حفظ الكود للمندوب
-                lat: userLoc.lat, // إضافة إحداثيات العميل
-                lng: userLoc.lng // إضافة إحداثيات العميل
+                verify_code: verificationCode,
+                discount: (discountAmount + pointsDiscountUsed),
+                lat: userLoc.lat,
+                lng: userLoc.lng
             };
-            const { error: err2 } = await _supabase.from('sh_public_orders').insert([publicOrderData]);
+            const { error: err2 = null } = await _supabase.from('sh_public_orders').insert([publicOrderData]);
             if (err2) throw err2;
 
             let orders = getStorage('orders');
-            // التعديل المضاد لضمان أن orders دائماً مصفوفة قبل محاولة الإضافة إليها
             if(!Array.isArray(orders)) orders = []; 
-            orders.push(orderData); // نحفظ الكائن الكامل محلياً ليبقى الهاتف والتاريخ ظاهرين في التطبيق
+            orders.push(orderData);
             setStorage('orders', orders);
             
             currentOrderKey = orderId;
@@ -847,31 +814,26 @@
     function startSearching() {
         document.getElementById('searching-sound').play();
         document.getElementById('eagle-searching').style.display = 'flex';
-        let timeLeft = 300; // مهلة 5 دقائق (300 ثانية)
+        let timeLeft = 300; 
         document.getElementById('cancel-timer').innerText = timeLeft;
         if(cancelInterval) clearInterval(cancelInterval);
         cancelInterval = setInterval(() => {
             timeLeft--;
             document.getElementById('cancel-timer').innerText = timeLeft;
             if (timeLeft <= 0) {
-                // --- تعديل: إيقاف البحث بعد 5 دقائق وإخطار العميل ---
                 clearInterval(cancelInterval);
                 document.getElementById('eagle-searching').style.display = 'none';
                 document.getElementById('searching-sound').pause();
                 showNotify("عذراً، لم يتم العثور على صقور حالياً. يرجى المحاولة لاحقاً 🦅", "error");
-                cancelOrder(); // حذف الطلب من قاعدة البيانات
-                // -------------------------------------------------------
+                cancelOrder(); 
             }
         }, 1000);
         
-        // البدء بمراقبة قاعدة البيانات حصرياً للقبول من مندوب حقيقي
         simulateAccept(); 
     }
 
     function simulateAccept() {
-        // التعديل: التأكد من إزالة أي قناة قديمة قبل الاشتراك الجديد لتجنب أخطاء Realtime
         _supabase.removeChannel(_supabase.channel('order_accept_check'));
-        // الاستماع لتغيير حالة الطلب في sh_public_orders من قبل المندوب (المندوب الحقيقي فقط)
         _supabase.channel('order_accept_check')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sh_public_orders', filter: `id=eq.${currentOrderKey}` }, payload => {
                 if(payload.new.status === 'accepted') {
@@ -880,7 +842,6 @@
                     document.getElementById('searching-sound').pause();
                     updateOrderStatus(currentOrderKey, 'accepted');
                     showNotify("تم قبول طلبك من قبل صقر الشاهين 🦅");
-                    // --- تعديل: عند القبول من مندوب حقيقي، نعرض شاشة كود التحقق والواتساب ---
                     const driverWA = payload.new.driver_phone || '966546083283';
                     const driverName = payload.new.driver_name || "صقر الشاهين 🦅";
                     document.getElementById('driver-chat-name').innerText = driverName;
@@ -904,15 +865,22 @@
                     document.getElementById('rating-overlay').style.display = 'flex';
                 }
                 if(payload.new.status === 'cancelled') {
-                    showNotify("عذراً، المندوب ألغى الطلب. جاري إعادة البحث..", "error");
+                    showNotify("عذراً، المندوب أو الإدارة ألغوا الطلب.", "error");
+                    localStorage.removeItem('shahen_active_order_id');
+                    currentOrderKey = null;
                     nav('p-history');
                 }
-            }).subscribe();
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'sh_public_orders', filter: `id=eq.${currentOrderKey}` }, payload => {
+                showNotify("تم إلغاء الطلب من قبل الإدارة.", "error");
+                localStorage.removeItem('shahen_active_order_id');
+                currentOrderKey = null;
+                nav('p-history');
+            })
+            .subscribe();
     }
 
-    // تعديل: تحديث الحالة وتزامن النقاط + تسجيل الفاتورة في Ledger
     async function updateOrderStatus(id, newStatus) {
-        // تحديث الحالة في الداتابيز للإدارة
         await _supabase.from('orders').update({ status: newStatus }).eq('id', id);
 
         let orders = getStorage('orders');
@@ -921,21 +889,7 @@
                 if(newStatus === 'completed' && currentUser) {
                     currentUser.points = (currentUser.points - (o.points_spent || 0)) + (o.points_earned || 0);
                     localStorage.setItem('shahen_user', JSON.stringify(currentUser));
-                    
-                    // تحديث النقاط في Supabase
                     _supabase.from('customers').update({ points: currentUser.points }).eq('id', currentUser.uid).then();
-                    
-                    // تسجيل البيانات المالية في جدول ledger لكي تراها الإدارة في "التقارير المالية"
-                    const companyProfit = (o.delivery_price || 0); 
-                    _supabase.from('ledger').insert([{
-                        driver_id: 'DRV_DEFAULT_SHAHEEN',
-                        customer_id: currentUser.uid,
-                        total_cash: o.total,
-                        company_profit: companyProfit,
-                        discount: discountAmount + pointsDiscountUsed,
-                        order_id: o.id,
-                        created_at: new Date()
-                    }]).then();
                 }
                 return {...o, status: newStatus};
             }
@@ -960,13 +914,10 @@
     function renderHistory() {
         const cont = document.getElementById('history-content');
         const orders = getStorage('orders');
-        // --- تعديل: فصل الطلبات النشطة والسابقة ديناميكياً لتجنب التعليق ---
         const activeOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
         const pastOrders = orders.filter(o => o.status === 'completed' || o.status === 'cancelled');
         const currentList = historyTab === 'active' ? activeOrders : pastOrders;
-        // ---------------------------------------------------------------
         if(!Array.isArray(orders) || currentList.length === 0) return cont.innerHTML = "<p style='text-align:center;'>لا توجد طلبات</p>";
-        // --- تعديل: إضافة وظيفة الضغط على الطلب النشط للتحويل للدردشة أو البحث ---
         cont.innerHTML = currentList.map(o => `
             <div class="card" onclick="${o.status !== 'completed' && o.status !== 'cancelled' ? `checkOrderAction('${o.id}', '${o.status}')` : ''}" style="${o.status !== 'completed' && o.status !== 'cancelled' ? 'cursor:pointer;' : ''}">
                 <div class="flex-reverse"><b>${o.res_name || 'طلب وصيني'}</b><span>${o.total.toLocaleString()} ل.س</span></div>
@@ -978,12 +929,10 @@
         `).join('');
     }
 
-    // --- تعديل: دالة فحص حالة الطلب عند الضغط عليه من السجل ---
     function checkOrderAction(id, status) {
         currentOrderKey = id;
         localStorage.setItem('shahen_active_order_id', id);
         if (status === 'accepted') {
-            // جلب بيانات الطلب من قاعدة البيانات لتحديث كود التحقق
             _supabase.from('sh_public_orders').select('*').eq('id', id).single().then(({data: active}) => {
                 if(active) {
                     verificationCode = active.verify_code;
@@ -1004,6 +953,7 @@
                     </div>`;
                     document.getElementById('client-code-notice').style.display = 'block';
                     document.getElementById('delivery-confirm-box').style.display = 'block';
+                    simulateAccept(); 
                 }
             });
         } else {
@@ -1028,18 +978,20 @@
         showNotify("يرجى الانتظار حتى يقوم المندوب بإدخال الكود أولاً 🦅", "error");
       }
     }
+
     function setStars(s) { currentRating = s; document.querySelectorAll('#main-rating-stars i').forEach((st, i) => st.className = i < s ? 'fas fa-star star-active' : 'fas fa-star'); }
 
     function submitMandatoryRating() {
         if(currentRating === 0) return showNotify("التقييم إجباري", "error");
         updateOrderStatus(currentOrderKey, 'completed');
+        cart = [];
+        currentResId = null;
+        document.getElementById('badge').innerText = 0;
+        document.getElementById('badge').style.display = 'none';
         localStorage.removeItem('shahen_active_order_id');
         currentOrderKey = null;
         pointsDiscountUsed = 0;
         discountAmount = 0;
-        cart = []; // تصفير مصفوفة السلة لضمان عدم بقاء الطلبات القديمة
-        document.getElementById('badge').innerText = 0; // تصفير العداد المرئي
-        document.getElementById('badge').style.display = 'none'; // إخفاء الدائرة الحمراء
         document.getElementById('rating-overlay').style.display = 'none';
         showNotify("تم إنهاء الرحلة، شكراً لك 🦅\nتم تحديث رصيد نقاطك!");
         nav('p-history');
@@ -1062,6 +1014,11 @@
             profileMap = L.map('profile-map').setView([userLoc.lat, userLoc.lng], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(profileMap);
             mapMarker = L.marker([userLoc.lat, userLoc.lng]).addTo(profileMap);
+            profileMap.on('click', (e) => {
+                userLoc = e.latlng;
+                if(mapMarker) profileMap.removeLayer(mapMarker);
+                mapMarker = L.marker(e.latlng).addTo(profileMap);
+            });
         }
     }
 
@@ -1077,6 +1034,24 @@
                     showNotify("تم تحديد الموقع بدقة ✅");
                 }
             }, () => showNotify("فشل جلب الموقع، يرجى تفعيل GPS", "error"), { enableHighAccuracy: true });
+        }
+    }
+
+    async function saveMapSelection() {
+        if(!currentUser) return;
+        showNotify("جاري حفظ الموقع...");
+        const { error } = await _supabase.from('customers').update({ 
+            lat: userLoc.lat, 
+            lng: userLoc.lng 
+        }).eq('id', currentUser.uid);
+        
+        if(!error) {
+            currentUser.lat = userLoc.lat;
+            currentUser.lng = userLoc.lng;
+            localStorage.setItem('shahen_user', JSON.stringify(currentUser));
+            showNotify("تم حفظ موقعك بنجاح! 🦅");
+        } else {
+            showNotify("فشل الحفظ: " + error.message, "error");
         }
     }
 
