@@ -104,6 +104,7 @@
     </div>
 
     <script>
+        // التعديل: تحديث مفاتيح الربط برابط المشروع والمفتاح الجديد
         const _supabase = supabase.createClient('https://ricoslplbhphydhtrufe.supabase.co', 'sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw');
         let currentRes = null;
         let lastCount = 0;
@@ -132,20 +133,14 @@
             document.getElementById('main-content').style.display = 'block';
             document.getElementById('display-res-name').innerText = currentRes?.name;
             
-            // تفعيل نظام البث المباشر المتقدم لمراقبة الجدول بالكامل
             _supabase.channel('pharmacy_realtime')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'sh_public_orders' }, payload => {
-                    // مراقبة ذكية: قارن المعرف كنص أو رقم
-                    const pid = payload.new ? payload.new.pharmacy_id : null;
-                    if (String(pid) === String(currentRes.id)) {
-                        loadOrders();
-                    }
+                    loadOrders();
                 })
                 .subscribe();
 
             loadOrders(true);
             
-            // تحديث تلقائي كل 5 ثوانٍ كخط دفاع ثانٍ
             setInterval(() => {
                 refreshTimer += 10;
                 document.getElementById('sync-bar').style.width = refreshTimer + "%";
@@ -156,7 +151,7 @@
         async function loadOrders(isFirst = false) {
             if(!currentRes) return;
 
-            // استعلام مرن جداً يبحث عن الـ ID كنص لضمان المطابقة مع كود العميل
+            // التعديل: ضمان مطابقة المعرف كـ String ليتوافق مع بيانات العميل
             const { data: orders, error } = await _supabase.from('sh_public_orders')
                 .select('*')
                 .eq('pharmacy_id', String(currentRes.id))
@@ -165,11 +160,7 @@
 
             if (error) {
                 document.getElementById('system-status').innerText = "فشل المزامنة ⚠️";
-                document.getElementById('system-status').style.color = "var(--danger)";
                 return;
-            } else {
-                document.getElementById('system-status').innerText = "متصل الآن ✅";
-                document.getElementById('system-status').style.color = "var(--success)";
             }
 
             const activeOrders = orders || [];
@@ -192,7 +183,7 @@
             }
 
             list.innerHTML = orders.map(o => `
-                <div class="order-card" style="${o.status === 'consulting' ? 'border: 2px solid var(--success)' : 'border: 1px solid var(--gold)'}">
+                <div class="order-card">
                     <div style="display:flex; justify-content:space-between;">
                         <span class="order-id">#${o.id}</span>
                         <span style="font-size:10px; opacity:0.6;">${new Date(o.created_at).toLocaleTimeString('ar-SY')}</span>
@@ -212,7 +203,6 @@
 
         async function openChat(orderId) {
             activeOrderId = orderId;
-            // إبلاغ العميل فوراً بأن الصيدلي دخل الدردشة
             await _supabase.from('sh_public_orders').update({ status: 'consulting' }).eq('id', orderId);
             
             const { data: order } = await _supabase.from('sh_public_orders').select('*').eq('id', orderId).single();
@@ -220,21 +210,21 @@
             document.getElementById('client-name-chat').innerText = order.customer_name;
             document.getElementById('active-order-id').innerText = "استشارة رقم #" + orderId;
             document.getElementById('active-chat-box').style.display = 'flex';
-            document.getElementById('chat-flow').innerHTML = `<div class="msg client">مرحباً، أود استشارتك بخصوص طلب طبي..</div>`;
+            document.getElementById('chat-flow').innerHTML = `<div class="msg client">أهلاً بك.. كيف يمكنني مساعدتك؟</div>`;
             loadOrders();
         }
 
         async function finishConsultation() {
-            if(confirm("هل تم الاتفاق؟ سيتم الآن تحويل الطلب لمناديب التوصيل.")) {
+            if(confirm("هل تريد إنهاء الاستشارة وتحويل الطلب للمناديب للتوصيل؟")) {
                 const { error } = await _supabase.from('sh_public_orders').update({
                     status: 'searching',
-                    res_type: 'restaurant', // تحويله لنوع يفهمه المندوب
-                    restaurant_note: 'طلب صيدلية مؤكد - يرجى الاستلام فوراً'
+                    res_type: 'restaurant',
+                    restaurant_note: 'تمت الاستشارة الطبية.. يرجى استلام الأدوية'
                 }).eq('id', activeOrderId);
                 
                 if(!error) {
                     closeChat();
-                    showToast("تم إرسال الطلب للمناديب 🦅");
+                    showToast("تم تحويل الطلب للمناديب 🦅");
                 }
             }
         }
